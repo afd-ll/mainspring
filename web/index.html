@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<meta name="theme-color" content="#FAF8F4">
+<title data-i18n="app.doctitle">机枢 · Mainspring</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#FAF8F4; --surface:#FFFFFF; --ink:#1A1A1A; --ink-2:#6E6961; --ink-3:#9E998F;
+  --hair:rgba(26,26,26,.16); --hair-2:rgba(26,26,26,.08);
+  --accent:#E4631A; --danger:#A3231C;
+  --serif:Georgia,"Times New Roman",serif;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+body{background:var(--paper);color:var(--ink);font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 48px 80px}
+
+/* ---------- 页头 ---------- */
+.masthead{padding:52px 0 0;text-align:center;border-bottom:1px solid var(--hair)}
+.brand{font-size:21px;font-weight:400;letter-spacing:.52em;text-indent:.52em}
+.sub{margin-top:13px;font-size:10.5px;letter-spacing:.32em;text-indent:.32em;color:var(--ink-3)}
+.tabs{margin-top:30px;display:flex;justify-content:center;gap:0}
+.tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;padding:10px 24px 13px;
+  font:inherit;font-size:12px;letter-spacing:.3em;text-indent:.3em;color:var(--ink-3);cursor:pointer;transition:color .18s var(--ease)}
+.tab:hover{color:var(--ink-2)}
+.tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0 22px;font-size:11px;letter-spacing:.14em;color:var(--ink-3)}
+.topbar .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--ink-3);margin-right:7px;vertical-align:1px}
+.topbar .dot.live{background:#3B6D11}
+.topbar .dot.dead{background:var(--danger)}
+.topbar a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid transparent;cursor:pointer}
+.topbar a:hover{color:var(--danger);border-bottom-color:var(--danger)}
+/* 版本号挪到页面最末（老大 2026-09-20） */
+.page-foot{max-width:1240px;margin:0 auto;padding:0 48px 46px;text-align:right;
+  font-size:10.5px;letter-spacing:.16em;color:var(--ink-3)}
+
+/* ---------- 统计 ---------- */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--hair);margin-bottom:26px}
+.st{padding:18px 20px;border-right:1px solid var(--hair-2)}
+.st:last-child{border-right:0}
+.st .n{font-family:var(--serif);font-size:30px;line-height:1.1;letter-spacing:.01em}
+.st .k{margin-top:5px;font-size:10px;letter-spacing:.2em;color:var(--ink-3)}
+.st.hot .n{color:var(--accent)}
+
+/* ---------- 工具条 ---------- */
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.search{flex:1;min-width:220px;border:0;border-bottom:1px solid var(--ink);background:transparent;
+  padding:9px 2px;font:inherit;font-size:13px;letter-spacing:.04em;color:var(--ink);outline:none}
+.search:focus{border-bottom-color:var(--accent)}
+.search::placeholder{color:var(--ink-3);letter-spacing:.14em;font-size:12px}
+.btn{appearance:none;background:var(--surface);border:1px solid var(--ink);color:var(--ink);
+  padding:9px 20px;font:inherit;font-size:11.5px;letter-spacing:.2em;text-indent:.2em;cursor:pointer;transition:all .16s var(--ease)}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.pri{background:var(--ink);color:var(--paper)}
+.btn.pri:hover{background:var(--surface);color:var(--ink)}
+.btn.gh{background:transparent;border-color:var(--hair);color:var(--ink-2)}
+.btn.gh:hover{border-color:var(--danger);color:var(--danger);background:transparent}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.sm{padding:5px 13px;font-size:10.5px;letter-spacing:.14em}
+
+/* ---------- 三栏 ---------- */
+/* 🔴 必须 minmax(0,1fr)：1fr 的最小尺寸按内容算，卡片里的 nowrap 长路径会把栏撑歪 */
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;align-items:start}
+.col > h2{font-size:11px;font-weight:400;letter-spacing:.2em;text-indent:.2em;color:var(--ink-2);
+  padding-bottom:11px;border-bottom:1px solid var(--ink);margin-bottom:2px;display:flex;justify-content:space-between}
+.col > h2 .c{font-family:var(--serif);font-size:13px;letter-spacing:0}
+.list{border-top:1px solid var(--hair-2)}
+/* 等级不画左侧色条（老大 2026-09-20：「为什么"高优先级"旁边是红线？好丑，
+   原本是把优先级标红立着，那个多好看」）⇒ 回到 v1 做法：让「等级标签」自己实心标色 */
+.card{padding:20px 18px;border-bottom:1px solid var(--hair-2);cursor:pointer;transition:background .15s var(--ease)}
+.card:hover{background:var(--surface)}
+.card .r1{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink-3)}
+.pill{font-size:9.5px;letter-spacing:.14em;padding:2.5px 8px;border:1px solid var(--hair);color:var(--ink-2);white-space:nowrap}
+/* 等级标签 = 实心色块（v1 的观感：优先级一眼跳出来） */
+.pill.k-红线{background:var(--danger);color:var(--paper);border-color:var(--danger)}
+.pill.k-高{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.pill.k-待拍板{border-color:var(--accent);color:var(--accent)}
+.pill.k-已点名{border-color:var(--ink);color:var(--ink)}
+.pill.k-进行中{border-color:var(--ink);color:var(--ink)}
+.card .ttl{font-size:14.5px;font-weight:500;line-height:1.5;letter-spacing:.005em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .smy{margin-top:11px;font-size:12px;line-height:1.72;color:var(--ink-2);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:62px}
+.card .loc{margin-top:10px;font-size:11px;letter-spacing:.06em;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{padding:44px 10px;text-align:center;font-size:11px;letter-spacing:.16em;color:var(--ink-3);line-height:2}
+/* 「另有 N 条已完成」—— 替代原来那条"验证记录栏不沉底"的特例，既保持列表干净，又不让人误以为空的 */
+.more{margin-top:14px;padding:10px 2px;font-size:10.5px;letter-spacing:.14em;color:var(--ink-3);
+  border-top:1px solid var(--hair-2);cursor:pointer;text-align:center;transition:color .16s var(--ease)}
+.more:hover{color:var(--ink)}
+
+/* ---------- 通用面板 ---------- */
+.panel{border:1px solid var(--hair);background:var(--surface)}
+.panel + .panel{margin-top:22px}
+.panel > h3{font-size:11px;font-weight:400;letter-spacing:.24em;text-indent:.24em;color:var(--ink-2);
+  padding:15px 20px;border-bottom:1px solid var(--hair-2)}
+/* （details.fold / .gd-h 的样式已随「怎么接」栏目一起删除，2026-09-20） */
+.row{display:flex;gap:16px;padding:14px 20px;border-bottom:1px solid var(--hair-2);align-items:flex-start}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--paper)}
+.row .grow{flex:1;min-width:0}
+.row .unread{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none;margin-top:7px}
+.row .unread.no{background:transparent}
+.k{font-size:10px;letter-spacing:.16em;color:var(--ink-3)}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;letter-spacing:.02em}
+
+/* ---------- 项目文件夹 ---------- */
+.proj{display:grid;grid-template-columns:250px minmax(0,1fr);gap:0;border:1px solid var(--hair);min-height:460px}
+.proj .side{border-right:1px solid var(--hair);padding:8px 0}
+.proj .side .it{padding:11px 20px;cursor:pointer;font-size:12.5px;display:flex;justify-content:space-between;gap:10px;transition:background .15s var(--ease)}
+.proj .side .it:hover{background:var(--paper)}
+.proj .side .it.on{background:var(--ink);color:var(--paper)}
+.proj .side .it.on .k{color:rgba(250,248,244,.6)}
+.proj .main{padding:8px 0;overflow:auto;max-height:640px}
+.proj .f{padding:11px 22px;cursor:pointer;display:flex;justify-content:space-between;gap:14px;align-items:baseline;
+  border-bottom:1px solid var(--hair-2);transition:background .15s var(--ease)}
+.proj .f:hover{background:var(--paper)}
+.proj .f .nm{font-size:12px;line-height:1.5;word-break:break-all}
+
+/* ---------- Token ---------- */
+.tkgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.tk{border:1px solid var(--hair);background:var(--surface);padding:20px 22px}
+.tk.dead{opacity:.5}
+.tk .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+.tk .nm{font-size:14px}
+.tk .val{margin:15px 0 4px;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;
+  background:var(--paper);border:1px solid var(--hair-2);padding:11px 13px;word-break:break-all;line-height:1.7}
+.tk .ha{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.tk .st{margin-top:12px;font-size:10.5px;letter-spacing:.12em;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
+.ok{color:#3B6D11}.bad{color:var(--danger)}
+
+/* ---------- 弹窗 ---------- */
+.mask{position:fixed;inset:0;background:rgba(26,26,26,.42);z-index:40}
+.dlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:680px;height:84vh;background:var(--paper);
+  z-index:41;display:flex;flex-direction:column;border:1px solid var(--ink)}
+.dlg.sm{height:auto;width:520px}
+.dlg .dh{padding:32px 34px 0;flex:none}
+.dlg .dh .r1{display:flex;align-items:center;gap:11px;margin-bottom:15px}
+.dlg h2{font-size:19px;font-weight:400;line-height:1.5;letter-spacing:.01em}
+.dlg .rule{height:1px;background:var(--ink);margin:22px 0 0;flex:none}
+.dlg .meta{display:flex;gap:22px;flex-wrap:wrap;padding:14px 34px;border-bottom:1px solid var(--hair-2);flex:none;
+  font-size:10.5px;letter-spacing:.1em;color:var(--ink-3)}
+.dlg .meta b{font-weight:400;color:var(--ink-2)}
+.dlg .body{flex:1;overflow:auto;padding:22px 34px;font-size:13px;line-height:1.85}
+.dlg .df{padding:18px 34px 24px;border-top:1px solid var(--hair-2);display:flex;gap:10px;justify-content:flex-end;flex:none}
+.dlg .fm{padding:0 34px 30px}
+.field{margin-top:20px}
+.field label{display:block;font-size:10.5px;letter-spacing:.18em;color:var(--ink-3);margin-bottom:8px}
+.field input,.field textarea,.field select{width:100%;border:0;border-bottom:1px solid var(--ink);background:transparent;
+  padding:8px 2px;font:inherit;font-size:13.5px;color:var(--ink);outline:none;border-radius:0}
+.field textarea{border:1px solid var(--hair);padding:11px 12px;line-height:1.75;resize:vertical;min-height:92px}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+.field .sub{font-size:10.5px;color:var(--ink-3);letter-spacing:.1em;margin-top:8px;line-height:1.8}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.err{color:var(--danger);font-size:11.5px;letter-spacing:.06em;min-height:17px;margin-top:16px}
+
+/* ---------- Markdown ---------- */
+.md h1,.md h2,.md h3,.md h4{font-weight:500;margin:20px 0 10px;line-height:1.5}
+.md h1{font-size:16px}.md h2{font-size:15px}.md h3{font-size:14px}.md h4{font-size:13px}
+.md p{margin:11px 0}
+.md ul,.md ol{margin:11px 0 11px 22px}
+.md li{margin:5px 0}
+.md code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:rgba(26,26,26,.05);padding:1.5px 5px}
+.md pre{background:rgba(26,26,26,.045);border-left:1px solid var(--hair);padding:13px 15px;overflow:auto;margin:13px 0}
+.md pre code{background:none;padding:0;font-size:12px;line-height:1.75}
+.md blockquote{border-left:1px solid var(--ink);padding:2px 0 2px 15px;margin:13px 0;color:var(--ink-2)}
+.md hr{border:0;border-top:1px solid var(--hair);margin:20px 0}
+.md table{border-collapse:collapse;margin:14px 0;font-size:12.5px;width:100%}
+.md th,.md td{border:1px solid var(--hair);padding:7px 11px;text-align:left}
+.md th{background:rgba(26,26,26,.035);font-weight:500}
+.md a{color:var(--accent)}
+.md strong{font-weight:500}
+
+/* ---------- 登录 ---------- */
+.login{position:fixed;inset:0;background:var(--paper);z-index:60;display:none;align-items:center;justify-content:center}
+.login.on{display:flex}
+.login .box{width:340px;border:1px solid var(--ink);padding:34px 32px}
+.login h1{font-size:15px;font-weight:400;letter-spacing:.28em;margin-bottom:6px}
+.login .s{font-size:11px;letter-spacing:.16em;color:var(--ink-3);margin-bottom:26px}
+
+.toast{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+  padding:11px 24px;font-size:11.5px;letter-spacing:.16em;z-index:70;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.toast.on{opacity:1}
+.hide{display:none !important}
+
+/* ---------- 暗色主题（设置页「主题」= 深色 / 跟随系统）----------
+   全站配色都走上面这几个变量，所以暗色只需要把变量翻一遍。 */
+html[data-theme=dark]{
+  --paper:#14140F; --surface:#1C1C18; --ink:#EDEAE3; --ink-2:#A9A49B; --ink-3:#78736B;
+  --hair:rgba(237,234,227,.20); --hair-2:rgba(237,234,227,.10);
+  --accent:#F07A2E;
+}
+/**
+ * 设置页
+ */
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:15px 20px;border-bottom:1px solid var(--hair-2)}
+.setrow:last-child{border-bottom:0}
+.setrow .sn{font-size:13px}
+.setrow .sh{margin-top:4px;font-size:11px;color:var(--ink-3);letter-spacing:.03em}
+.setrow .sr{flex:0 0 auto;text-align:right}
+.setrow select,.setrow input[type=number]{appearance:none;background:var(--surface);color:var(--ink);
+  border:1px solid var(--hair);padding:7px 10px;font:inherit;font-size:12px;border-radius:2px;min-width:160px}
+/* 下拉框自己的箭头（原生箭头被 appearance:none 去掉了，不补就像只读框） */
+.setrow select{background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 4.6L6 8l3.4-3.4' fill='none' stroke='%239E998F' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:26px;
+  background-size:9px 9px}
+html[data-theme=dark] .setrow select{background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 4.6L6 8l3.4-3.4' fill='none' stroke='%2378736B' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:9px 9px}
+.setrow .kv{font-size:12px;color:var(--ink-2);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.sw{position:relative;display:inline-block;width:40px;height:22px;vertical-align:middle}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw span{position:absolute;inset:0;background:var(--hair);border-radius:22px;
+  transition:background .18s var(--ease);cursor:pointer}
+.sw span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;
+  background:var(--surface);border-radius:50%;transition:transform .18s var(--ease)}
+.sw input:checked + span{background:var(--accent)}
+.sw input:checked + span:before{transform:translateX(18px)}
+.setnote{padding:15px 20px 4px;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+.setrow [disabled]{opacity:.5}
+/* 设置入口：右上角齿轮（页签栏只放主功能，设置按传统收进图标） */
+.topbar .gear{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+  margin-left:14px;border-radius:50%;color:var(--ink-3);vertical-align:middle;
+  transition:color .18s var(--ease),background .18s var(--ease)}
+.topbar .gear:hover{color:var(--ink);background:var(--hair-2)}
+.topbar .gear.on{color:var(--accent)}
+.topbar .gear svg{display:block}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="masthead">
+    <div class="brand" data-i18n="app.name">机 枢</div>
+    <div class="sub" data-i18n="app.tagline">MAINSPRING · 待办 / 待拍板 / 验证记录</div>
+    <div class="tabs">
+      <button class="tab on" data-tab="board" data-i18n="nav.board">看板</button>
+      <button class="tab" data-tab="projects" data-i18n="nav.projects">项目文件夹</button>
+      <button class="tab" data-tab="events" data-i18n="nav.events">事件流</button>
+      <button class="tab" data-tab="tokens" data-i18n="nav.tokens">Token</button>
+      <button class="tab" data-tab="agents" data-i18n="nav.agents">唤醒</button>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <span><span class="dot" id="live"></span><span id="live-txt" data-i18n="top.connecting">连接中…</span></span>
+    <span></span>
+    <span><a id="chpw" data-i18n="top.chpw">改密码</a><span style="margin:0 9px;opacity:.45">·</span><a id="logout" data-i18n="top.logout">退出</a><a id="set-btn" class="gear" data-i18n-title="nav.settings" title="设置"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.08a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></a></span>
+  </div>
+
+  <!-- 看板 -->
+  <section id="v-board">
+    <div class="stats" id="stats"></div>
+    <div class="bar">
+      <input class="search" id="q" data-i18n-ph="board.search" placeholder="输编号或关键词检索">
+      <button class="btn" id="toggle-closed" data-i18n="board.showClosed">显示已闭环</button>
+      <button class="btn" id="reload" data-i18n="btn.refresh">刷 新</button>
+      <button class="btn pri" id="add" data-i18n="btn.add">新 建</button>
+    </div>
+    <div class="cols">
+      <div class="col" id="col-decide"></div>
+      <div class="col" id="col-verify"></div>
+      <div class="col" id="col-todo"></div>
+    </div>
+  </section>
+
+  <!-- 项目文件夹 -->
+  <section id="v-projects" class="hide">
+    <div class="bar">
+      <div class="k" id="proj-sum" style="flex:1"></div>
+      <button class="btn" id="proj-reload" data-i18n="btn.rescan">重 扫</button>
+    </div>
+    <div class="proj">
+      <div class="side" id="proj-side"></div>
+      <div class="main" id="proj-main"></div>
+    </div>
+  </section>
+
+  <!-- 事件流 -->
+  <section id="v-events" class="hide">
+    <div class="bar">
+      <div class="k" id="ev-sum" style="flex:1"></div>
+      <button class="btn" id="ev-ack" data-i18n="btn.ackAll">全部标为已读</button>
+    </div>
+    <div class="panel" id="ev-list"></div>
+  </section>
+
+  <!-- Token -->
+  <section id="v-tokens" class="hide">
+    <div class="bar">
+      <div class="k" id="tk-sum" style="flex:1"></div>
+      <button class="btn" id="tk-verify" data-i18n="btn.verifyAll">全部自检</button>
+      <button class="btn pri" id="tk-add" data-i18n="btn.add">新 建</button>
+    </div>
+    <div class="tkgrid" id="tk-list"></div>
+  </section>
+
+  <!-- 设置 -->
+  <section id="v-settings" class="hide">
+    <div id="set-body"></div>
+  </section>
+
+  <!-- 唤醒 -->
+  <section id="v-agents" class="hide">
+    <div class="bar" style="justify-content:flex-end">
+      <button class="btn" id="ag-refresh" data-i18n="btn.refresh">刷 新</button>
+    </div>
+    <div class="panel">
+      <h3 data-i18n="agents.whosWorking">谁在接活 · 按 token 看</h3>
+      <div id="wk-list"></div>
+    </div>
+    <div class="panel">
+      <h3 data-i18n="agents.pushHint">可选 · 主动推过去（agent 能起 HTTP 服务时才需要）</h3>
+      <div id="ag-list"></div>
+      <div style="padding:14px 20px;border-top:1px solid var(--hair-2)">
+        <button class="btn sm" id="ag-add" data-i18n="agents.addTarget">新增推送目标</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="page-foot"><span id="build"></span></div>
+
+<div id="modal"></div>
+<div class="toast" id="toast"></div>
+<div class="login" id="login">
+  <form class="box" id="lg-form">
+    <h1 data-i18n="login.title">机 枢</h1>
+    <div class="s" data-i18n="login.sub">MAINSPRING · 登录</div>
+    <div class="field"><label data-i18n="login.user">用户名</label><input id="lg-u" autocomplete="username" autofocus></div>
+    <div class="field"><label data-i18n="login.pass">密码</label><input id="lg-p" type="password" autocomplete="current-password"></div>
+    <div class="err" id="lg-e"></div>
+    <button class="btn pri" style="width:100%;margin-top:22px" type="submit" data-i18n="login.go">进 入</button>
+  </form>
+</div>
+
+<script>
+var API_BASE = '';                       /* 前端与后端解耦：改这一个常量即可指向别的后端 */
+var BUILD_ID = 'v2.12-20260929-1230';
+var LS_TOKEN = 'ms_token';
+
+/* ============ 设置系统 + i18n（零依赖，字典内联） ============
+ *
+ * 三条纪律（改这块之前先读）：
+ *   ① **数据值不翻译**：'待点名' / '红线' 这类是 DB 里的真值，比较/筛选一律用原值；
+ *      只有**渲染输出**时才过 dl()。搞反了就是「切英文后筛不出东西」。
+ *   ② 同一句话只说一遍：界面文案全在 I18N 里，HTML 上只挂 data-i18n 属性。
+ *   ③ HTML 里的中文是**兜底**：字典缺 key 或 JS 挂了，页面退化成中文而不是空白。
+ *
+ * 语言优先级：URL ?lang= > 服务端设置 > 本机上次选的 > 浏览器语言 > zh
+ * 设置存哪：服务端 SQLite（settings 表）—— 这是自托管单实例，设置该跟着实例走；
+ *          本机 localStorage 只做首屏缓存，避免刷新时闪一下。
+ */
+var LS_LANG = 'ms_lang';
+var LS_THEME = 'ms_theme';
+var LANG = 'zh';
+var THEME = 'auto';
+
+/* ---------- 字典 ---------- */
+var I18N = {
+zh: {
+  'app.doctitle': '机枢 · Mainspring',
+  'app.name': '机 枢',
+  'app.tagline': 'MAINSPRING · 待办 / 待拍板 / 验证记录',
+
+  'nav.board': '看板', 'nav.projects': '项目文件夹', 'nav.events': '事件流',
+  'nav.tokens': 'Token', 'nav.agents': '唤醒', 'nav.settings': '设置',
+
+  'top.connecting': '连接中…', 'top.chpw': '改密码', 'top.logout': '退出',
+
+  'board.search': '输编号或关键词检索', 'board.showClosed': '显示已闭环',
+  'board.hideClosed': '隐藏已闭环', 'board.empty': '这一栏是空的',
+  'board.more': '另有 {n} 条 · 点这里展开', 'board.looksEmpty': '看着像空的',
+  'board.moreN': '另有 {n} 条{w} · 点这里展开',
+  'col.wordArchived': '已归档', 'col.wordDone': '已完成',
+
+  'btn.refresh': '刷 新', 'btn.add': '新 建', 'btn.rescan': '重 扫',
+  'btn.ackAll': '全部标为已读', 'btn.verifyAll': '全部自检',
+  'btn.cancel': '取消', 'btn.create': '创 建', 'btn.save': '保 存', 'btn.ok': '确定',
+
+  'agents.whosWorking': '谁在接活 · 按 token 看',
+  'agents.pushHint': '可选 · 主动推过去（agent 能起 HTTP 服务时才需要）',
+  'agents.addTarget': '新增推送目标',
+
+  'login.title': '机 枢', 'login.sub': 'MAINSPRING · 登录',
+  'login.user': '用户名', 'login.pass': '密码', 'login.go': '进 入',
+  'login.bad': '用户名或密码不对',
+
+  /* 字段名（表头 / 表单标签共用一套） */
+  'f.code': '编号', 'f.title': '标题', 'f.type': '类型', 'f.status': '状态',
+  'f.level': '等级', 'f.project': '项目', 'f.location': '位置', 'f.link': '联动',
+  'f.note': '备注', 'f.updated': '更新', 'f.due': '截止日', 'f.parent': '父',
+  'f.conclusion': '结论', 'f.unfiled': '未归类',
+
+  /* 三栏 + 统计 */
+  'col.decide': '等 你 拍 板', 'col.verify': '验 证 记 录', 'col.todo': '待 办',
+  'stat.all': '全部条目', 'stat.open': '未闭环', 'stat.decide': '待你拍板',
+  'stat.unread': '事件未读', 'stat.decided': '累计拍板',
+
+  /* 弹窗动作 */
+  'act.edit': '编辑', 'act.mention': '点名', 'act.decide': '拍板', 'act.close': '闭环',
+  'act.mentionWake': '点名并唤醒', 'act.confirmDecide': '确认拍板',
+  'act.mentionNote': '附言（可留空）', 'act.decideNote': '拍板意见（必填）',
+  'act.mentionPh': '这条我点名要做，先做…', 'act.decidePh': '选 A 路径：…',
+  'act.decideNeedNote': '拍板必须给意见',
+  'act.decided': '已拍板，AI 会收到事件',
+  'act.mentionedNoHook': '已点名 · 未登记唤醒目标，AI 下次开工拉事件',
+  'act.mentionedWoke': '已点名 · 唤醒了 {n} 个，成功 {ok}',
+  'act.someFailed': '（有失败，去「唤醒」页看）',
+  'act.toNamed': '状态转「已点名」', 'act.toTodo': '类型转「待办」',
+
+  /* 新建 / 编辑 */
+  'new.title': '新增条目', 'new.tip': '一句话说清',
+  'new.catLabel': '类别（决定编号前缀）', 'new.projLabel': '项目（自动建文件夹）',
+  'new.projPh': '如：notecli', 'new.locPh': '如：src/nn/probe.c:120',
+  'new.notePh': '写 Markdown 也行', 'new.titleRequired': '标题必填',
+  'edit.title': '编辑条目',
+
+  /* 设置页 */
+  'set.title': '设置',
+  'set.group.appearance': '外观', 'set.group.board': '看板显示', 'set.group.security': '安全',
+  'set.about': '关于',
+  'set.saved': '已保存', 'set.unchanged': '没有变化',
+  'set.failed': '保存失败：', 'set.readonly': '需要管理员权限才能修改',
+  'set.note': '设置存在服务端 SQLite，换台设备打开也是同一份。',
+
+  'settings.lang': '界面语言', 'settings.lang.hint': '切换后立刻生效，只影响界面显示，不动数据',
+  'settings.theme': '主题', 'settings.theme.hint': '「跟随系统」会按你的设备自动切浅色 / 深色',
+  'settings.page_size': '每栏显示条数', 'settings.page_size.hint': '超出部分收成「另有 N 条」可点开',
+  'settings.default_tab': '默认页签', 'settings.default_tab.hint': '打开网页先落到哪一页',
+  'settings.time_format': '时间制式', 'settings.time_format.hint': '24 小时制 / 12 小时制',
+  'settings.relative_time': '时间显示成「多久前」', 'settings.relative_time.hint': '关掉就显示绝对时间',
+  'settings.session_days': '登录保持天数', 'settings.session_days.hint': '超过就要重新登录（1–365）',
+  'settings.token_default_role': '新建 token 的默认角色', 'settings.token_default_role.hint': '新建时可再改',
+
+  'opt.lang.zh': '中文', 'opt.lang.en': 'English',
+  'opt.theme.auto': '跟随系统', 'opt.theme.light': '浅色', 'opt.theme.dark': '深色',
+  'opt.time_format.24h': '24 小时制', 'opt.time_format.12h': '12 小时制（AM/PM）',
+  'opt.default_tab.board': '看板', 'opt.default_tab.projects': '项目文件夹',
+  'opt.default_tab.events': '事件流', 'opt.default_tab.tokens': 'Token',
+  'opt.default_tab.agents': '唤醒', 'opt.default_tab.settings': '设置',
+  'opt.token_default_role.readonly': 'readonly（只读）',
+  'opt.token_default_role.agent': 'agent（干活）',
+  'opt.token_default_role.admin': 'admin（全权）',
+
+  /* 关于块 */
+  'about.version': '版本', 'about.build': '前端构建', 'about.host': '部署地址',
+  'about.role': '当前身份', 'about.schema': '库版本',
+
+  /* 运行提示 */
+  'msg.refreshed': '已刷新', 'msg.rescanned': '已重扫', 'msg.deleted': '已删除',
+  'msg.failed': '失败：', 'msg.acked': '已标记 {n} 条为已读',
+  'msg.verify': '自检：可用 {ok} / 失败 {bad}',
+  'live.connecting': '实时连接中…', 'live.on': '实时已连接',
+  'live.poll': '轮询模式（未开 SSE）', 'live.down': '实时断开 · 降级轮询',
+  'live.off': '后端连不上', 'live.changed': '机枢变动 · ',
+  'msg.created': '已创建 {code}', 'msg.saved': '已保存',
+  'msg.newVersion': '有新版本 · 请刷新', 'msg.readFail': '读不到：',
+  'btn.close': '关 闭', 'f.noNote': '（无备注）',
+
+  'new.badge': '新建',
+  'edit.replaceAll': '整段替换',
+  'close.conclusion': '结论（可留空）', 'close.ph': '实测结果 / 结论 / 遗留',
+  'close.confirm': '确认闭环', 'close.done': '已闭环',
+
+  'proj.none': '没有项目文件夹', 'proj.empty': '这个项目下还没有文件',
+  'proj.sum': '共 {n} 个文件 · {m} 个项目 · 目录 {root}',
+
+  'ev.sum': '{n} 条事件 · 未读 {u} 条', 'ev.none': '还没有事件',
+  'kind.add': '新增', 'kind.update': '改动', 'kind.close': '闭环',
+  'kind.mention': '点名', 'kind.decide': '拍板', 'kind.token': 'Token',
+  'kind.migrate': '迁移', 'kind.setting': '设置',
+
+  'tk.sum': '{n} 个 Token · 可用 {ok} 个', 'tk.active': '可用', 'tk.revoked': '已吊销',
+  'tk.role': '角色', 'tk.tail': '尾号', 'tk.copy': '复制', 'tk.verify': '验证',
+  'tk.rotate': '替换', 'tk.revoke': '吊销', 'tk.created': '创建 {ts}',
+  'tk.lastUsed': '最近使用 {ts}', 'tk.never': '从未', 'tk.none': '还没有 Token',
+  'tk.copied': '已复制「{name}」· 明文没显示在页面上', 'tk.valueFail': '取不到明文：',
+  'tk.verifyOk': '验证通过 · 可正常调用', 'tk.verifyBad': '验证失败 · ',
+  'tk.verifyBadP': '验证失败：', 'tk.okShort': 'Token 可用', 'tk.badShort': 'Token 不可用',
+  'tk.rotateAsk': '替换后旧值立即失效，需要把新值发给对应的 agent。继续？',
+  'tk.rotated': '已替换并复制新值 · 尾号 {tail}（旧值已立即失效）',
+  'tk.rotatedNoCopy': '已替换 · 尾号 {tail} —— 自动复制失败，点「复制」取',
+  'tk.revokeAsk': '吊销后这个 token 立刻不能再用了。继续？',
+  'tk.revokedMsg': '已吊销',
+  'tkadd.title': '新建 Token', 'tkadd.sub': '给某个 agent 发一把钥匙',
+  'tkadd.nameLabel': '名称（给谁用）', 'tkadd.namePh': '如：claude-code / 本机脚本',
+  'tkadd.nameRequired': '名称必填', 'tkadd.roleLabel': '角色',
+  'tkadd.roleAgent': 'agent —— 可读写任务与事件',
+  'tkadd.roleReadonly': 'readonly —— 只能读',
+  'tkadd.roleAdmin': 'admin —— 还能管 Token',
+  'tkadd.go': '生 成',
+  'tkadd.madeCopy': '已生成并复制到剪贴板（明文不显示在页面上）',
+  'tkadd.madeNoCopy': '已生成 —— 自动复制失败，去列表点「复制」',
+
+  'cp.title': '改密码', 'cp.sub': '改登录账号 / 密码',
+  'cp.oldLabel': '当前密码（必填，防别人在你已登录的机器上改）',
+  'cp.userLabel': '新账号（留空 = 不改）', 'cp.userPh': '当前：{u}',
+  'cp.passLabel': '新密码', 'cp.forgot': '忘了密码只能上服务器改 .env。',
+  'cp.go': '确 改', 'cp.needOld': '请填当前密码', 'cp.needOne': '账号和密码至少要改一样',
+  'cp.done': '已改 · ', 'cp.noChange': '无变化',
+
+  'ago.now': '刚刚', 'ago.min': '{n} 分钟前', 'ago.hour': '{n} 小时前', 'ago.day': '{n} 天前',
+  'wk.never': '从未', 'wk.neverPulled': '从未拉过', 'wk.online': '在线', 'wk.offline': '离线',
+  'wk.lastPull': '最近拉活 ', 'wk.cursor': '已跟进到 ', 'wk.latest': ' / 最新 #',
+  'wk.behind': '落后 {n} 条', 'wk.caughtUp': '已跟上',
+  'wk.none': '还没有可用的 token<br>去「Token」页建一个，发给你的 agent',
+  'wk.enabled': '启用中', 'wk.disabled': '已停用', 'wk.noHook': '（未配 hook 地址）',
+  'wk.lastPush': '上次推送 ', 'wk.result': ' · 结果 ',
+  'wk.ping': '试一下', 'wk.enable': '启用', 'wk.disable': '停用', 'wk.del': '删除',
+  'wk.noAgents': '没有推送目标（不配也完全能用 —— agent 自己来拉就行）',
+  'wk.pingOk': '通了 · ', 'wk.pingBad': '没通 · ',
+  'wk.enabledMsg': '已启用', 'wk.disabledMsg': '已停用',
+  'wk.delAsk': '删除后点名不会再叫它。继续？',
+  'agadd.title': '新建唤醒目标', 'agadd.sub': '点名时，把任务推到哪里',
+  'agadd.nameLabel': '名称', 'agadd.namePh': '如：本机玄机 / claude-code / 开发机',
+  'agadd.hookLabel': 'Hook 地址（收到 HTTP POST）',
+  'agadd.tokenLabel': '附带 token（可选，放进 X-MS-Token / Authorization 头）',
+  'agadd.tokenPh': '给对端校验用', 'agadd.noteLabel': '备注', 'agadd.notePh': '这台机器是干嘛的',
+  'agadd.payload': '对端会收到 ', 'agadd.nameRequired': '名称必填', 'agadd.done': '已登记',
+},
+en: {
+  'app.doctitle': 'Mainspring · decision board',
+  'app.name': 'Mainspring',
+  'app.tagline': 'MAINSPRING · TO DO / DECIDE / VERIFY',
+
+  'nav.board': 'Board', 'nav.projects': 'Projects', 'nav.events': 'Events',
+  'nav.tokens': 'Tokens', 'nav.agents': 'Wake-up', 'nav.settings': 'Settings',
+
+  'top.connecting': 'Connecting…', 'top.chpw': 'Password', 'top.logout': 'Sign out',
+
+  'board.search': 'Search by code or keyword', 'board.showClosed': 'Show closed',
+  'board.hideClosed': 'Hide closed', 'board.empty': 'Nothing in this column',
+  'board.more': '{n} more · click to expand', 'board.looksEmpty': 'Looks empty',
+  'board.moreN': '{n} more {w} · click to expand',
+  'col.wordArchived': 'archived', 'col.wordDone': 'completed',
+
+  'btn.refresh': 'Refresh', 'btn.add': 'New', 'btn.rescan': 'Rescan',
+  'btn.ackAll': 'Mark all read', 'btn.verifyAll': 'Check all',
+  'btn.cancel': 'Cancel', 'btn.create': 'Create', 'btn.save': 'Save', 'btn.ok': 'OK',
+
+  'agents.whosWorking': 'Who is picking up work · by token',
+  'agents.pushHint': 'Optional · push to an agent (only if it runs its own HTTP server)',
+  'agents.addTarget': 'Add push target',
+
+  'login.title': 'Mainspring', 'login.sub': 'MAINSPRING · SIGN IN',
+  'login.user': 'Username', 'login.pass': 'Password', 'login.go': 'Sign in',
+  'login.bad': 'Wrong username or password',
+
+  'f.code': 'Code', 'f.title': 'Title', 'f.type': 'Type', 'f.status': 'Status',
+  'f.level': 'Severity', 'f.project': 'Project', 'f.location': 'Location',
+  'f.link': 'Linked', 'f.note': 'Notes', 'f.updated': 'Updated', 'f.due': 'Due',
+  'f.parent': 'Parent', 'f.conclusion': 'Conclusion', 'f.unfiled': 'Unfiled',
+
+  'col.decide': 'WAITING ON YOU', 'col.verify': 'VERIFICATION', 'col.todo': 'TO DO',
+  'stat.all': 'All items', 'stat.open': 'Open', 'stat.decide': 'Need decision',
+  'stat.unread': 'Unread events', 'stat.decided': 'Decisions made',
+
+  'act.edit': 'Edit', 'act.mention': 'Assign', 'act.decide': 'Decide',
+  'act.close': 'Close out', 'act.mentionWake': 'Assign & wake up',
+  'act.confirmDecide': 'Confirm decision',
+  'act.mentionNote': 'Note (optional)', 'act.decideNote': 'Decision (required)',
+  'act.mentionPh': 'I want this done, start with…',
+  'act.decidePh': 'Take option A: …',
+  'act.decideNeedNote': 'A decision needs a reason',
+  'act.decided': 'Decided — the agent will get an event',
+  'act.mentionedNoHook': 'Assigned · no wake-up target registered, the agent will pull it later',
+  'act.mentionedWoke': 'Assigned · woke {n}, {ok} succeeded',
+  'act.someFailed': ' (some failed — see the Wake-up tab)',
+  'act.toNamed': 'status → Assigned', 'act.toTodo': 'type → To do',
+
+  'new.title': 'New item', 'new.tip': 'One line, be specific',
+  'new.catLabel': 'Category (sets the code prefix)',
+  'new.projLabel': 'Project (folder is created for you)',
+  'new.projPh': 'e.g. notecli', 'new.locPh': 'e.g. src/nn/probe.c:120',
+  'new.notePh': 'Markdown works here', 'new.titleRequired': 'Title is required',
+  'edit.title': 'Edit item',
+
+  'set.title': 'Settings',
+  'set.group.appearance': 'Appearance', 'set.group.board': 'Board',
+  'set.group.security': 'Security', 'set.about': 'About',
+  'set.saved': 'Saved', 'set.unchanged': 'No change',
+  'set.failed': 'Could not save: ', 'set.readonly': 'Admin role required to change',
+  'set.note': 'Settings live in the server-side SQLite — the same on every device you open.',
+
+  'settings.lang': 'Language', 'settings.lang.hint': 'Applies immediately; display only, never touches your data',
+  'settings.theme': 'Theme', 'settings.theme.hint': '"System" follows your device light/dark setting',
+  'settings.page_size': 'Items per column', 'settings.page_size.hint': 'The rest collapses into "N more"',
+  'settings.default_tab': 'Default tab', 'settings.default_tab.hint': 'Where the page lands on open',
+  'settings.time_format': 'Time format', 'settings.time_format.hint': '24-hour or 12-hour',
+  'settings.relative_time': 'Show relative times', 'settings.relative_time.hint': 'Turn off to show absolute timestamps',
+  'settings.session_days': 'Keep me signed in (days)', 'settings.session_days.hint': 'After that you sign in again (1–365)',
+  'settings.token_default_role': 'Default role for new tokens', 'settings.token_default_role.hint': 'Can still be changed when creating',
+
+  'opt.lang.zh': '中文', 'opt.lang.en': 'English',
+  'opt.theme.auto': 'System', 'opt.theme.light': 'Light', 'opt.theme.dark': 'Dark',
+  'opt.time_format.24h': '24-hour', 'opt.time_format.12h': '12-hour (AM/PM)',
+  'opt.default_tab.board': 'Board', 'opt.default_tab.projects': 'Projects',
+  'opt.default_tab.events': 'Events', 'opt.default_tab.tokens': 'Tokens',
+  'opt.default_tab.agents': 'Wake-up', 'opt.default_tab.settings': 'Settings',
+  'opt.token_default_role.readonly': 'readonly (read only)',
+  'opt.token_default_role.agent': 'agent (does the work)',
+  'opt.token_default_role.admin': 'admin (full access)',
+
+  'about.version': 'Version', 'about.build': 'Front-end build', 'about.host': 'Deployed at',
+  'about.role': 'Signed in as', 'about.schema': 'Schema',
+
+  'msg.refreshed': 'Refreshed', 'msg.rescanned': 'Rescanned', 'msg.deleted': 'Deleted',
+  'msg.failed': 'Failed: ', 'msg.acked': 'Marked {n} as read',
+  'msg.verify': 'Check: {ok} ok / {bad} failed',
+  'live.connecting': 'Connecting live…', 'live.on': 'Live',
+  'live.poll': 'Polling (no SSE)', 'live.down': 'Live dropped · falling back to polling',
+  'live.off': 'Backend unreachable', 'live.changed': 'Mainspring · ',
+  'msg.created': 'Created {code}', 'msg.saved': 'Saved',
+  'msg.newVersion': 'New version available · please refresh', 'msg.readFail': 'Cannot read: ',
+  'btn.close': 'Close', 'f.noNote': '(no notes)',
+
+  'new.badge': 'New',
+  'edit.replaceAll': 'replaces the whole block',
+  'close.conclusion': 'Conclusion (optional)',
+  'close.ph': 'What you measured / concluded / left over',
+  'close.confirm': 'Close out', 'close.done': 'Closed out',
+
+  'proj.none': 'No project folders', 'proj.empty': 'No files in this project yet',
+  'proj.sum': '{n} files · {m} projects · {root}',
+
+  'ev.sum': '{n} events · {u} unread', 'ev.none': 'No events yet',
+  'kind.add': 'Added', 'kind.update': 'Updated', 'kind.close': 'Closed out',
+  'kind.mention': 'Named', 'kind.decide': 'Decided', 'kind.token': 'Token',
+  'kind.migrate': 'Migrated', 'kind.setting': 'Settings',
+
+  'tk.sum': '{n} tokens · {ok} active', 'tk.active': 'Active', 'tk.revoked': 'Revoked',
+  'tk.role': 'Role', 'tk.tail': 'ends with', 'tk.copy': 'Copy', 'tk.verify': 'Check',
+  'tk.rotate': 'Rotate', 'tk.revoke': 'Revoke', 'tk.created': 'Created {ts}',
+  'tk.lastUsed': 'Last used {ts}', 'tk.never': 'never', 'tk.none': 'No tokens yet',
+  'tk.copied': 'Copied "{name}" · the plaintext never touched the page',
+  'tk.valueFail': 'Could not fetch plaintext: ',
+  'tk.verifyOk': 'OK · works', 'tk.verifyBad': 'Failed · ',
+  'tk.verifyBadP': 'Check failed: ', 'tk.okShort': 'Token works', 'tk.badShort': 'Token unusable',
+  'tk.rotateAsk': 'The old value stops working immediately — you must give the new one to that agent. Continue?',
+  'tk.rotated': 'Rotated and copied · ends with {tail} (old value already dead)',
+  'tk.rotatedNoCopy': 'Rotated · ends with {tail} — auto-copy failed, use Copy',
+  'tk.revokeAsk': 'This token stops working right away. Continue?',
+  'tk.revokedMsg': 'Revoked',
+  'tkadd.title': 'New token', 'tkadd.sub': 'Hand an agent a key',
+  'tkadd.nameLabel': 'Name (who is it for)', 'tkadd.namePh': 'e.g. claude-code / local script',
+  'tkadd.nameRequired': 'Name is required', 'tkadd.roleLabel': 'Role',
+  'tkadd.roleAgent': 'agent — read and write items and events',
+  'tkadd.roleReadonly': 'readonly — read only',
+  'tkadd.roleAdmin': 'admin — can also manage tokens',
+  'tkadd.go': 'Generate',
+  'tkadd.madeCopy': 'Generated and copied to clipboard (plaintext never shown on the page)',
+  'tkadd.madeNoCopy': 'Generated — auto-copy failed, hit Copy in the list',
+
+  'cp.title': 'Password', 'cp.sub': 'Change login name / password',
+  'cp.oldLabel': 'Current password (required — so nobody can change it on your logged-in machine)',
+  'cp.userLabel': 'New username (blank = keep)', 'cp.userPh': 'current: {u}',
+  'cp.passLabel': 'New password',
+  'cp.forgot': 'Lost the password? You have to edit .env on the server.',
+  'cp.go': 'Change', 'cp.needOld': 'Enter your current password',
+  'cp.needOne': 'Change at least one of username / password',
+  'cp.done': 'Changed · ', 'cp.noChange': 'no change',
+
+  'ago.now': 'just now', 'ago.min': '{n} min ago', 'ago.hour': '{n} h ago', 'ago.day': '{n} d ago',
+  'wk.never': 'never', 'wk.neverPulled': 'never pulled', 'wk.online': 'online', 'wk.offline': 'offline',
+  'wk.lastPull': 'last pull ', 'wk.cursor': 'caught up to ', 'wk.latest': ' / latest #',
+  'wk.behind': '{n} behind', 'wk.caughtUp': 'up to date',
+  'wk.none': 'No usable token yet<br>create one on the Token tab and hand it to your agent',
+  'wk.enabled': 'Enabled', 'wk.disabled': 'Disabled', 'wk.noHook': '(no hook URL set)',
+  'wk.lastPush': 'last push ', 'wk.result': ' · result ',
+  'wk.ping': 'Test', 'wk.enable': 'Enable', 'wk.disable': 'Disable', 'wk.del': 'Delete',
+  'wk.noAgents': 'No push targets (fully optional — the agent can just pull)',
+  'wk.pingOk': 'reachable · ', 'wk.pingBad': 'unreachable · ',
+  'wk.enabledMsg': 'Enabled', 'wk.disabledMsg': 'Disabled',
+  'wk.delAsk': 'After deleting, mentions will not call it again. Continue?',
+  'agadd.title': 'New wake-up target', 'agadd.sub': 'Where to push a task when you name it',
+  'agadd.nameLabel': 'Name', 'agadd.namePh': 'e.g. this box / claude-code / build server',
+  'agadd.hookLabel': 'Hook URL (receives an HTTP POST)',
+  'agadd.tokenLabel': 'Attached token (optional, sent as X-MS-Token / Authorization)',
+  'agadd.tokenPh': 'for the other end to verify', 'agadd.noteLabel': 'Note',
+  'agadd.notePh': 'what this machine is for',
+  'agadd.payload': 'The other end receives ', 'agadd.nameRequired': 'Name is required',
+  'agadd.done': 'Registered',
+}
+};
+
+/* ---------- 数据值 → 显示词（只影响显示，比较一律用原值） ---------- */
+var D = {
+en: {
+  '待点名': 'Pending', '已点名': 'Assigned', '进行中': 'In progress',
+  '已闭环': 'Closed', '已否决': 'Rejected', '待拍板': 'Needs decision',
+  '待办': 'To do', '验证记录': 'Verification', '拍板': 'Decision', '新建': 'New',
+  '红线': 'Blocker', '高': 'High', '中': 'Medium', '低': 'Low',
+  '未归类': 'Unfiled',
+  'AR': 'Architecture', 'BG': 'Bug', 'CX': 'Experiment', 'OP': 'Ops', 'VF': 'Verification',
+  'add': 'Added', 'update': 'Updated', 'close': 'Closed out', 'mention': 'Named',
+  'decide': 'Decided', 'token': 'Token', 'setting': 'Settings'
+}
+};
+
+function t(k, vars, fallback){
+  var d = I18N[LANG] || {}, z = I18N.zh || {};
+  var s = (d[k] != null) ? d[k] : ((z[k] != null) ? z[k] : null);
+  if(s == null) s = (fallback != null ? fallback : k);
+  if(vars){
+    Object.keys(vars).forEach(function(v){ s = s.split('{'+v+'}').join(vars[v]); });
+  }
+  return s;
+}
+/* 数据值翻译：查不到就原样返回（英文界面下中文数据也不会消失） */
+function dl(v){ var m = D[LANG]; return (m && m[v] != null) ? m[v] : v; }
+
+function applyI18n(root){
+  var r = root || document;
+  r.querySelectorAll('[data-i18n]').forEach(function(el){
+    el.textContent = t(el.getAttribute('data-i18n'), null, el.textContent);
+  });
+  r.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+    el.placeholder = t(el.getAttribute('data-i18n-ph'), null, el.placeholder);
+  });
+  r.querySelectorAll('[data-i18n-title]').forEach(function(el){
+    el.title = t(el.getAttribute('data-i18n-title'), null, el.title);
+  });
+}
+
+function applyLang(lang, rerender){
+  LANG = (lang === 'en') ? 'en' : 'zh';
+  try{ localStorage.setItem(LS_LANG, LANG); }catch(e){}
+  document.documentElement.setAttribute('lang', LANG === 'en' ? 'en' : 'zh-CN');
+  document.documentElement.setAttribute('data-lang', LANG);
+  document.title = t('app.doctitle');
+  applyI18n(document);
+  var tc0 = $('toggle-closed');
+  if(tc0) tc0.textContent = S.showClosed ? t('board.hideClosed') : t('board.showClosed');
+  if(rerender){
+    try{ renderStats(); renderCols(); renderProjects(); renderEvents();
+         renderTokens(); renderWake(); renderSettings(); }catch(e){}
+  }
+}
+
+function applyTheme(theme){
+  THEME = theme || 'auto';
+  try{ localStorage.setItem(LS_THEME, THEME); }catch(e){}
+  var real = THEME;
+  if(THEME === 'auto'){
+    real = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', real);
+  var m = document.querySelector('meta[name=theme-color]');
+  if(m) m.setAttribute('content', real === 'dark' ? '#14140F' : '#FAF8F4');
+}
+if(window.matchMedia){
+  try{
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+      if(THEME === 'auto') applyTheme('auto');
+    });
+  }catch(e){}
+}
+
+/* ---------- 设置页 ---------- */
+var SET = null;                       /* 服务端返回：settings / defaults / schema / groups / stored */
+
+function loadSettings(){
+  return api('/api/settings').then(function(r){
+    SET = r;
+    S.settings = r.settings;
+    S.canAdmin = (r.role === 'admin');
+    renderSettings();
+    /* 服务端设置是权威，但 URL 上显式写的 lang 优先（分享链接用） */
+    if(!WANT_LANG) applyLang(r.settings.lang, false);
+    applyTheme(r.settings.theme);
+    return r;
+  });
+}
+
+function optLabel(key, val){ return t('opt.' + key + '.' + val, null, val); }
+
+function setRow(s, v){
+  var label = t('settings.' + s.key), hint = t('settings.' + s.key + '.hint');
+  if(hint === 'settings.' + s.key + '.hint') hint = '';
+  var ctl = '';
+  var dis = S.canAdmin ? '' : ' disabled';
+  if(s.type === 'enum'){
+    ctl = '<select data-set="' + s.key + '"' + dis + '>' + s.choices.map(function(c){
+      return '<option value="' + esc(c) + '"' + (String(v) === String(c) ? ' selected' : '') + '>'
+        + esc(optLabel(s.key, c)) + '</option>';
+    }).join('') + '</select>';
+  } else if(s.type === 'int'){
+    if(s.choices){
+      ctl = '<select data-set="' + s.key + '"' + dis + '>' + s.choices.map(function(c){
+        return '<option value="' + esc(c) + '"' + (String(v) === String(c) ? ' selected' : '') + '>'
+          + esc(c) + '</option>';
+      }).join('') + '</select>';
+    } else {
+      ctl = '<input type="number" data-set="' + s.key + '"' + dis + ' value="' + esc(v) + '"'
+        + ' min="' + (s.min != null ? s.min : 0) + '" max="' + (s.max != null ? s.max : 9999) + '">';
+    }
+  } else if(s.type === 'bool'){
+    ctl = '<label class="sw"><input type="checkbox" data-set="' + s.key + '"' + dis
+      + (v === '1' ? ' checked' : '') + '><span></span></label>';
+  }
+  return '<div class="setrow"><div class="sl"><div class="sn">' + esc(label) + '</div>'
+    + (hint ? '<div class="sh">' + esc(hint) + '</div>' : '') + '</div>'
+    + '<div class="sr">' + ctl + '</div></div>';
+}
+
+function renderSettings(){
+  var box = $('set-body');
+  if(!box) return;
+  if(!SET){ box.innerHTML = '<div class="panel"><div class="empty">…</div></div>'; return; }
+  var html = '';
+  SET.groups.forEach(function(g){
+    html += '<div class="panel"><h3>' + esc(t('set.group.' + g)) + '</h3><div class="setg">';
+    SET.schema.filter(function(s){ return s.group === g; }).forEach(function(s){
+      html += setRow(s, SET.settings[s.key]);
+    });
+    html += '</div></div>';
+  });
+  /* 关于：只读信息 */
+  var rows = [
+    ['about.version', (S.stats && S.stats.ver) || '—'],
+    ['about.build', BUILD_ID],
+    ['about.host', location.origin],
+    ['about.role', (S.who && S.who.role) || '—'],
+    ['about.schema', (SET.schema_ver != null ? String(SET.schema_ver) : '3')]
+  ];
+  html += '<div class="panel"><h3>' + esc(t('set.about')) + '</h3><div class="setg">'
+    + rows.map(function(r){
+        return '<div class="setrow"><div class="sl"><div class="sn">' + esc(t(r[0]))
+          + '</div></div><div class="sr"><span class="kv">' + esc(r[1]) + '</span></div></div>';
+      }).join('')
+    + '</div></div>';
+  html += '<div class="setnote">' + esc(t('set.note')) + '</div>';
+  box.innerHTML = html;
+}
+
+function saveSetting(key, value){
+  if(!S.canAdmin){ toast(t('set.readonly')); renderSettings(); return; }
+  var body = {};
+  body[key] = value;
+  api('/api/settings', {method: 'POST', body: body}).then(function(r){
+    SET.settings = r.settings;
+    S.settings = r.settings;
+    toast((r.changed && r.changed.length) ? t('set.saved') : t('set.unchanged'));
+    if(key === 'lang'){ applyLang(value, true); renderSettings(); }   /* 换语言要整页重渲染 */
+    else if(key === 'theme'){ applyTheme(value); }
+    else {                               /* 影响到看板/事件渲染的项 */
+      renderSettings();
+      renderEvents(); renderCols();
+    }
+  }).catch(function(e){
+    toast(t('set.failed') + e.message);
+    loadSettings();
+  });
+}
+
+document.addEventListener('change', function(ev){
+  var el = ev.target;
+  if(!el || !el.getAttribute) return;
+  var key = el.getAttribute('data-set');
+  if(!key) return;
+  var val = (el.type === 'checkbox') ? (el.checked ? '1' : '0') : el.value;
+  saveSetting(key, val);
+});
+
+(function(){                              /* 支持 ?token=xxx 直接进入（便于分享/自检） */
+  try{
+    var m = location.search.match(/[?&]token=([^&]+)/);
+    if(m) localStorage.setItem(LS_TOKEN, decodeURIComponent(m[1]));
+  }catch(e){}
+})();
+var NO_SSE = /[?&]nosse=1/.test(location.search);   /* ?nosse=1 ⇒ 只轮询（自检/无 SSE 环境用） */
+var WANT_TAB = (location.search.match(/[?&]tab=([a-z]+)/) || [])[1] || '';   /* ?tab=… ⇒ 打开就落到该页签 */
+var WANT_LANG = (location.search.match(/[?&]lang=(zh|en)/) || [])[1] || '';  /* ?lang=en ⇒ 强制英文界面（分享链接用，优先于服务端设置） */   /* ?tab=… ⇒ 打开就落到该页签 */
+var WANT_OPEN = (location.search.match(/[?&]open=([^&]+)/) || [])[1] || '';  /* ?open=AR-01 ⇒ 打开就弹出该条详情（深链，可分享） */
+var CLOSED = {'已闭环':1,'已否决':1};
+var LVORDER = ['红线','高','中','低'];
+
+var S = {items:[], stats:null, events:[], tokens:[], projects:[], tab:'board',
+         q:'', cur:null, projSel:null, sse:null, poll:null, timer:null, build:'', open_round:1,
+         showClosed:false, lastEventId:0, agents:[]};
+
+/* ============ 基础 ============ */
+function $(id){return document.getElementById(id);}
+function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function plain(s){ return noEmoji(String(s==null?'':s)).replace(/```[\s\S]*?```/g,' ').replace(/[#*>`|_\-]/g,' ').replace(/\s+/g,' ').trim(); }
+/* 备注里的 emoji（🔴 ✅ ⚠️ …）一律滤掉 —— 老大 2026-09-19：「这个红色印记不需要」 */
+var EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\uFE0F\u200D]/gu;
+function noEmoji(s){ return String(s==null?'':s).replace(EMOJI_RE,'').replace(/^[ \t]+(?=\S)/gm,''); }
+function tok(){try{return localStorage.getItem(LS_TOKEN)||'';}catch(e){return '';}}
+function toast(m){var el=$('toast');el.textContent=m;el.classList.add('on');clearTimeout(el._h);el._h=setTimeout(function(){el.classList.remove('on');},2200);}
+
+function hdr(extra){
+  var h = Object.assign({}, extra||{});
+  var t = tok();
+  if(t) h['X-MS-Token'] = t;
+  return h;
+}
+function api(path, opt){
+  opt = opt || {};
+  var init = {method:opt.method||'GET', headers:hdr(), credentials:'same-origin'};
+  if(opt.body !== undefined && opt.body !== null){
+    init.headers['Content-Type'] = 'application/json';
+    init.body = JSON.stringify(opt.body);
+  }
+  return fetch(API_BASE+path, init).then(function(r){
+    if(r.status===401){ showLogin(); var e=new Error('未登录'); e.code=401; throw e; }
+    return r.json().catch(function(){return {};}).then(function(j){
+      if(!r.ok){ var e2=new Error(j.error||j.detail||('HTTP '+r.status)); e2.code=r.status; e2.data=j; throw e2; }
+      return j;
+    });
+  });
+}
+
+/* ============ 登录 ============ */
+function showLogin(){$('login').classList.add('on');}
+function hideLogin(){$('login').classList.remove('on');}
+$('lg-form').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var u=$('lg-u').value, p=$('lg-p').value;
+  fetch(API_BASE+'/login',{method:'POST',credentials:'same-origin',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({user:u,pass:p})})
+  .then(function(r){ if(!r.ok) throw new Error('用户名或密码不对'); return r.json(); })
+  .then(function(){ hideLogin(); boot(); })
+  .catch(function(e){ $('lg-e').textContent = e.message; });
+});
+/* 登录界面只留账号 + 密码（老大 2026-09-19：「用户登录界面不要放 token 登录的窗口」）。
+   Token 仍然可用，但只走隐藏路径：URL 上的 ?token=xxx，或 localStorage 里已经存着的。 */
+$('logout').addEventListener('click', function(){
+  try{localStorage.removeItem(LS_TOKEN);}catch(e){}
+  fetch(API_BASE+'/logout',{credentials:'same-origin'}).then(function(){ location.reload(); });
+});
+
+/* ============ 三栏口径（与 v1 的 inBucket 同源：看编号前缀，不看「类型」字段） ============ */
+function isClosed(it){ return !!CLOSED[it['状态']]; }
+function needsDecide(it){ return !isClosed(it) && (it['类型']==='待拍板' || it['状态']==='待拍板'); }
+function bucket(it){
+  var c = String(it['编号']||'');
+  if(needsDecide(it) && c.indexOf('VF')!==0) return 'decide';
+  if(c.indexOf('VF')===0 || it['类型']==='验证记录') return 'verify';
+  return 'todo';
+}
+function decisionCount(){
+  return S.items.filter(function(it){return /【拍板 \d{4}-\d{2}-\d{2}】/.test(String(it['备注']||''));}).length;
+}
+function countIn(b, closed){
+  var n=0;
+  for(var i=0;i<S.items.length;i++){ if(bucket(S.items[i])===b && isClosed(S.items[i])===!!closed) n++; }
+  return n;
+}
+function itemsIn(b){
+  var out;
+  if(!S.q){
+    /* 🔴 三栏统一：**默认不显示已闭环**（老大 2026-09-20：「已闭环的为什么默认显示？
+       不是说最好不显示吗？」）—— 此前「验证记录栏不沉底」的特例已取消。
+       怕"看着像空的"这个问题，用每栏底部的「另有 N 条 · 点这里展开」提示解决。 */
+    out = S.items.filter(function(it){
+      if(bucket(it)!==b) return false;
+      return S.showClosed ? true : !isClosed(it);
+    });
+  } else {
+    var q = S.q.toLowerCase();
+    out = S.items.filter(function(it){
+      if(bucket(it)!==b) return false;
+      return (String(it['编号']||'')+String(it['标题']||'')+String(it['备注']||'')).toLowerCase().indexOf(q)>=0;
+    });
+  }
+  out.sort(function(a,b){
+    var la=LVORDER.indexOf(a['等级']), lb=LVORDER.indexOf(b['等级']);
+    if(la<0)la=9; if(lb<0)lb=9;
+    if(la!==lb) return la-lb;
+    return String(a['编号']||'').localeCompare(String(b['编号']||''),'zh');
+  });
+  return out;
+}
+
+/* ============ Markdown ============ */
+function inline(s){
+  s = noEmoji(s);
+  return s
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+function md(src){
+  if(!src) return '<p style="color:var(--ink-3)">'+t('f.noNote')+'</p>';
+  var lines = String(src).replace(/\r\n/g,'\n').split('\n');
+  var out=[], i=0;
+  while(i<lines.length){
+    var ln = lines[i];
+    if(/^\s*$/.test(ln)){ i++; continue; }
+    if(/^```/.test(ln)){
+      var code=[]; i++;
+      while(i<lines.length && !/^```/.test(lines[i])){ code.push(lines[i]); i++; }
+      i++;
+      out.push('<pre><code>'+esc(code.join('\n'))+'</code></pre>');
+      continue;
+    }
+    if(/^(-{3,}|\*{3,})\s*$/.test(ln)){ out.push('<hr>'); i++; continue; }
+    var h = ln.match(/^(#{1,4})\s+(.*)$/);
+    if(h){ out.push('<h'+h[1].length+'>'+inline(esc(h[2]))+'</h'+h[1].length+'>'); i++; continue; }
+    if(/^\s*\|.*\|\s*$/.test(ln) && i+1<lines.length && /^\s*\|[\s:\-|]+\|\s*$/.test(lines[i+1])){
+      var head = ln.split('|').slice(1,-1).map(function(x){return x.trim();});
+      i += 2;
+      var rows=[];
+      while(i<lines.length && /^\s*\|.*\|\s*$/.test(lines[i])){
+        rows.push(lines[i].split('|').slice(1,-1).map(function(x){return x.trim();})); i++;
+      }
+      var tb='<table><thead><tr>'+head.map(function(x){return '<th>'+inline(esc(x))+'</th>';}).join('')+'</tr></thead><tbody>';
+      rows.forEach(function(r){ tb+='<tr>'+r.map(function(x){return '<td>'+inline(esc(x))+'</td>';}).join('')+'</tr>'; });
+      out.push(tb+'</tbody></table>');
+      continue;
+    }
+    if(/^\s*>\s?/.test(ln)){
+      var q=[];
+      while(i<lines.length && /^\s*>\s?/.test(lines[i])){ q.push(lines[i].replace(/^\s*>\s?/,'')); i++; }
+      out.push('<blockquote>'+md(q.join('\n'))+'</blockquote>');
+      continue;
+    }
+    if(/^\s*[-*+]\s+/.test(ln)){
+      var ul=[];
+      while(i<lines.length && /^\s*[-*+]\s+/.test(lines[i])){ ul.push(lines[i].replace(/^\s*[-*+]\s+/,'')); i++; }
+      out.push('<ul>'+ul.map(function(x){return '<li>'+inline(esc(x))+'</li>';}).join('')+'</ul>');
+      continue;
+    }
+    if(/^\s*\d+[.)]\s+/.test(ln)){
+      var ol=[];
+      while(i<lines.length && /^\s*\d+[.)]\s+/.test(lines[i])){ ol.push(lines[i].replace(/^\s*\d+[.)]\s+/,'')); i++; }
+      out.push('<ol>'+ol.map(function(x){return '<li>'+inline(esc(x))+'</li>';}).join('')+'</ol>');
+      continue;
+    }
+    var p=[];
+    while(i<lines.length && !/^\s*$/.test(lines[i]) && !/^(#{1,4}\s|```|\s*[-*+]\s|\s*\d+[.)]\s|\s*>|\s*\|)/.test(lines[i])){
+      p.push(lines[i]); i++;
+    }
+    if(p.length) out.push('<p>'+inline(esc(p.join('\n'))).replace(/\n/g,'<br>')+'</p>');
+  }
+  return out.join('');
+}
+
+/* ============ 弹窗 ============ */
+function closeModal(){ $('modal').innerHTML=''; }
+function modal(html, small){
+  $('modal').innerHTML = '<div class="mask" id="mask"></div><div class="dlg'+(small?' sm':'')+'">'+html+'</div>';
+  $('mask').addEventListener('click', closeModal);
+}
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape' && $('modal').innerHTML) closeModal();
+});
+
+/* ============ 渲染：看板 ============ */
+function renderStats(){
+  var st = S.stats || {};
+  var open = S.items.filter(function(it){return !isClosed(it);}).length;
+  var dec = S.items.filter(function(it){return bucket(it)==='decide' && !isClosed(it);}).length;
+  var unread = st.events_unread||0;
+  $('stats').innerHTML =
+    cell(st.total||0, t('stat.all')) + cell(open, t('stat.open')) +
+    cell(dec, t('stat.decide'), dec > 0) + cell(unread, t('stat.unread')) +
+    cell(decisionCount(), t('stat.decided'));
+  function cell(n,k,hot){ return '<div class="st'+(hot?' hot':'')+'"><div class="n">'+n+'</div><div class="k">'+k+'</div></div>'; }
+}
+function card(it){
+  var lv = it['等级']||'中';
+  var cls = lv==='红线'?'lv-redline':(lv==='高'?'lv-high':'');
+  return '<article class="card '+cls+'" data-rid="'+esc(it['编号'])+'" data-detail="1">'
+    + '<div class="r1"><span class="code">'+esc(it['编号'])+'</span>'
+    + '<span class="pill k-'+esc(lv)+'">'+esc(dl(lv))+'</span>'
+    + '<span class="pill k-'+esc(it['状态']||'')+'">'+esc(dl(it['状态']||''))+'</span></div>'
+    + '<div class="ttl">'+esc(it['标题'])+'</div>'
+    + '<div class="smy">'+esc(plain(it['备注']).slice(0,160))+'</div>'
+    + '<div class="loc">'+esc(it['项目']||t('f.unfiled'))+(it['位置']?' · '+esc(it['位置']):'')+'</div>'
+    + '</article>';
+}
+function renderCols(){
+  var defs = [['decide','col-decide',t('col.decide')],['verify','col-verify',t('col.verify')],['todo','col-todo',t('col.todo')]];
+  defs.forEach(function(d){
+    var b=d[0], arr=itemsIn(b), closedN = countIn(b, true);
+    var h = '<h2><span>'+d[2]+'</span><span class="c">'+(b==='decide'?decisionCount():closedN)+'</span></h2>';
+    var word = b==='decide' ? t('col.wordArchived') : t('col.wordDone');
+    if(!arr.length){
+      h += '<div class="list"><div class="empty">'+t('board.empty')+'</div></div>';   /* 「另有 N 条」交给下面的 .more，别重复两遍 */
+    } else {
+      h += '<div class="list">'+arr.map(card).join('')+'</div>';
+    }
+    if(closedN > 0 && !S.showClosed){
+      h += '<div class="more" data-more="1">'+t('board.moreN', {n: closedN, w: word})+'</div>';
+    }
+    $(d[1]).innerHTML = h;
+  });
+}
+function renderBoard(){ renderStats(); renderCols(); }
+
+/* ============ 渲染：详情 ============ */
+function openDetail(code){
+  var it = null;
+  for(var i=0;i<S.items.length;i++) if(String(S.items[i]['编号'])===String(code)){ it=S.items[i]; break; }
+  if(!it) return;
+  S.cur = it;
+  var meta = [[t('f.type'), dl(it['类型'])],[t('f.status'), dl(it['状态'])],[t('f.level'), dl(it['等级'])],
+              [t('f.project'), it['项目']||t('f.unfiled')],[t('f.location'), it['位置']||'—'],
+              [t('f.link'), it['联动']||'—'],[t('f.updated'), it['updated_at']||'—']]
+    .filter(function(x){return x[1];})
+    .map(function(x){return '<span>'+x[0]+' <b>'+esc(x[1])+'</b></span>';}).join('');
+  var body = '<div class="dh"><div class="r1"><span class="pill k-'+esc(it['类型'])+'">'+esc(dl(it['类型']))+'</span>'
+    + '<span class="code">'+esc(it['编号'])+'</span></div><h2>'+esc(it['标题'])+'</h2></div>'
+    + '<div class="rule"></div><div class="meta">'+meta+'</div>'
+    + '<div class="body md">'+md(it['备注'])+'</div>'
+    + '<div class="df">'
+    + '<button class="btn gh" data-act="edit" data-code="'+esc(it['编号'])+'">'+t('act.edit')+'</button>'
+    + '<button class="btn" data-act="mention" data-code="'+esc(it['编号'])+'">'+t('act.mention')+'</button>'
+    + '<button class="btn" data-act="decide" data-code="'+esc(it['编号'])+'">'+t('act.decide')+'</button>'
+    + '<button class="btn pri" data-act="close" data-code="'+esc(it['编号'])+'">'+t('act.close')+'</button>'
+    + '</div>';
+  modal(body);
+}
+
+/* 收意见的弹窗（不用原生 prompt） */
+function openAction(code, kind){
+  var isMention = kind==='mention';
+  var it = S.items.filter(function(x){return String(x['编号'])===String(code);})[0]||{};
+  var body = '<div class="dh"><div class="r1"><span class="pill">'+t(isMention?'act.mention':'act.decide')+'</span>'
+    + '<span class="code">'+esc(code)+'</span></div><h2>'+esc(it['标题']||'')+'</h2></div>'
+    + '<div class="rule"></div>'
+    + '<div class="fm"><div class="field"><label>'+t(isMention?'act.mentionNote':'act.decideNote')+'</label>'
+    + '<textarea id="ac-v" placeholder="'+t(isMention?'act.mentionPh':'act.decidePh')+'"></textarea>'
+    + '<div class="sub">'+t(isMention ? 'act.toNamed' : 'act.toTodo')+'</div></div>'
+    + '<div class="err" id="ac-e"></div></div>'
+    + '<div class="df"><button class="btn gh" id="ac-c">'+t('btn.cancel')+'</button>'
+    + '<button class="btn pri" id="ac-go">'+t(isMention?'act.mentionWake':'act.confirmDecide')+'</button></div>';
+  modal(body, true);
+  $('ac-v').focus();
+  $('ac-c').onclick = closeModal;
+  $('ac-go').onclick = function(){
+    var v = $('ac-v').value.trim();
+    if(!isMention && !v){ $('ac-e').textContent = t('act.decideNeedNote'); return; }
+    $('ac-go').disabled = true;
+    api('/api/'+(isMention?'mention':'decide'), {method:'POST', body: isMention?{code:code,opinion:v}:{code:code,decision:v}})
+      .then(function(r){
+        closeModal();
+        if(!isMention){ toast(t('act.decided')); }
+        else{
+          var wk = r['唤醒'] || [];
+          if(!wk.length){ toast(t('act.mentionedNoHook')); }
+          else{
+            var okn = wk.filter(function(x){ return String(x.status||'').indexOf('ok')===0; }).length;
+            toast(t('act.mentionedWoke', {n: wk.length, ok: okn}) + (okn < wk.length ? t('act.someFailed') : ''));
+          }
+        }
+        return reloadAll().then(function(){ if(S.tab==='agents') loadAgents(); });
+      })
+      .catch(function(e){ $('ac-e').textContent = e.message; $('ac-go').disabled=false; });
+  };
+}
+
+/* 新建 */
+function openAdd(){
+  var opts = ['AR','BG','CX','OP','VF'].map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('');
+  var body = '<div class="dh"><div class="r1"><span class="pill">'+t('new.badge')+'</span></div><h2>'+t('new.title')+'</h2></div>'
+    + '<div class="rule"></div>'
+    + '<div class="fm">'
+    + '<div class="field"><label>'+t('f.title')+'</label><input id="ad-t" placeholder="'+t('new.tip')+'"></div>'
+    + '<div class="f2">'
+    + '<div class="field"><label>'+t('new.catLabel')+'</label><select id="ad-c">'+opts+'</select></div>'
+    + '<div class="field"><label>'+t('f.level')+'</label><select id="ad-l">'
+      + ['红线','高','中','低'].map(function(x){return '<option value="'+x+'"'+(x==='中'?' selected':'')+'>'+esc(dl(x))+'</option>';}).join('')
+      + '</select></div>'
+    + '</div>'
+    + '<div class="f2">'
+    + '<div class="field"><label>'+t('new.projLabel')+'</label><input id="ad-p" placeholder="'+t('new.projPh')+'"></div>'
+    + '<div class="field"><label>'+t('f.location')+'</label><input id="ad-s" placeholder="'+t('new.locPh')+'"></div>'
+    + '</div>'
+    + '<div class="field"><label>'+t('f.note')+'</label><textarea id="ad-n" placeholder="'+t('new.notePh')+'"></textarea></div>'
+    + '<div class="err" id="ad-e"></div></div>'
+    + '<div class="df"><button class="btn gh" id="ad-x">'+t('btn.cancel')+'</button><button class="btn pri" id="ad-go">'+t('btn.create')+'</button></div>';
+  modal(body, true);
+  $('ad-t').focus();
+  $('ad-x').onclick = closeModal;
+  $('ad-go').onclick = function(){
+    var ttl = $('ad-t').value.trim();
+    if(!ttl){ $('ad-e').textContent = t('new.titleRequired'); return; }
+    $('ad-go').disabled = true;
+    api('/api/add',{method:'POST',body:{'标题':ttl,'类别':$('ad-c').value,'等级':$('ad-l').value,
+      '项目':$('ad-p').value.trim(),'位置':$('ad-s').value.trim(),'备注':$('ad-n').value}})
+      .then(function(r){ closeModal(); toast(t('msg.created', {code: r['编号']})); reloadAll(); })
+      .catch(function(e){ $('ad-e').textContent=e.message; $('ad-go').disabled=false; });
+  };
+}
+
+/* 编辑 */
+function openEdit(code){
+  var it = S.items.filter(function(x){return String(x['编号'])===String(code);})[0];
+  if(!it) return;
+  var body = '<div class="dh"><div class="r1"><span class="pill">'+t('act.edit')+'</span><span class="code">'+esc(code)+'</span></div>'
+    + '<h2>'+esc(it['标题'])+'</h2></div><div class="rule"></div>'
+    + '<div class="fm"><div class="field"><label>'+t('f.title')+'</label><input id="ed-t" value="'+esc(it['标题'])+'"></div>'
+    + '<div class="f2">'
+    + '<div class="field"><label>'+t('f.status')+'</label><select id="ed-s">'
+      + ['待点名','已点名','进行中','待拍板','已闭环','已否决'].map(function(x){
+          return '<option value="'+x+'"'+(x===it['状态']?' selected':'')+'>'+esc(dl(x))+'</option>';}).join('')+'</select></div>'
+    + '<div class="field"><label>'+t('f.level')+'</label><select id="ed-l">'
+      + ['红线','高','中','低'].map(function(x){
+          return '<option value="'+x+'"'+(x===it['等级']?' selected':'')+'>'+esc(dl(x))+'</option>';}).join('')+'</select></div>'
+    + '</div>'
+    + '<div class="f2">'
+    + '<div class="field"><label>'+t('f.project')+'</label><input id="ed-p" value="'+esc(it['项目']||'')+'"></div>'
+    + '<div class="field"><label>'+t('f.location')+'</label><input id="ed-x" value="'+esc(it['位置']||'')+'"></div>'
+    + '</div>'
+    + '<div class="field"><label>'+t('f.note')+'（'+t('edit.replaceAll')+'）</label><textarea id="ed-n" style="min-height:150px">'+esc(it['备注']||'')+'</textarea></div>'
+    + '<div class="err" id="ed-e"></div></div>'
+    + '<div class="df"><button class="btn gh" id="ed-x2">'+t('btn.cancel')+'</button><button class="btn pri" id="ed-go">'+t('btn.save')+'</button></div>';
+  modal(body, true);
+  $('ed-x2').onclick = closeModal;
+  $('ed-go').onclick = function(){
+    $('ed-go').disabled = true;
+    api('/api/update',{method:'POST',body:{code:code,'标题':$('ed-t').value,
+      '状态':$('ed-s').value,'等级':$('ed-l').value,'项目':$('ed-p').value.trim(),
+      '位置':$('ed-x').value.trim(),'备注':$('ed-n').value}})
+      .then(function(){ closeModal(); toast(t('msg.saved')); reloadAll(); })
+      .catch(function(e){ $('ed-e').textContent=e.message; $('ed-go').disabled=false; });
+  };
+}
+
+/* 闭环 */
+function openClose(code){
+  var it = S.items.filter(function(x){return String(x['编号'])===String(code);})[0]||{};
+  var body = '<div class="dh"><div class="r1"><span class="pill">'+t('act.close')+'</span><span class="code">'+esc(code)+'</span></div>'
+    + '<h2>'+esc(it['标题']||'')+'</h2></div><div class="rule"></div>'
+    + '<div class="fm"><div class="field"><label>'+t('close.conclusion')+'</label>'
+    + '<textarea id="cl-v" placeholder="'+t('close.ph')+'"></textarea></div>'
+    + '<div class="err" id="cl-e"></div></div>'
+    + '<div class="df"><button class="btn gh" id="cl-x">'+t('btn.cancel')+'</button><button class="btn pri" id="cl-go">'+t('close.confirm')+'</button></div>';
+  modal(body, true);
+  $('cl-x').onclick = closeModal;
+  $('cl-go').onclick = function(){
+    api('/api/close',{method:'POST',body:{code:code,conclusion:$('cl-v').value.trim()}})
+      .then(function(){ closeModal(); toast(t('close.done')); reloadAll(); })
+      .catch(function(e){ $('cl-e').textContent=e.message; });
+  };
+}
+
+/* ============ 渲染：项目文件夹 ============ */
+function renderProjects(){
+  var ps = S.projects||[];
+  if(!ps.length){ $('proj-side').innerHTML='<div class="empty">'+t('proj.none')+'</div>'; $('proj-main').innerHTML=''; return; }
+  if(!S.projSel || !ps.filter(function(p){return p.project===S.projSel;}).length) S.projSel = ps[0].project;
+  $('proj-sum').textContent = t('proj.sum', {n: S.projTotal||0, m: ps.length, root: S.projRoot||''});
+  $('proj-side').innerHTML = ps.map(function(p){
+    return '<div class="it'+(p.project===S.projSel?' on':'')+'" data-proj="'+esc(p.project)+'">'
+      + '<span>'+esc(p.project)+'</span><span class="k">'+p.count+'</span></div>';
+  }).join('');
+  var cur = ps.filter(function(p){return p.project===S.projSel;})[0];
+  $('proj-main').innerHTML = (cur.files||[]).map(function(f){
+    return '<div class="f" data-file="'+esc(cur.project+'/'+f.name)+'">'
+      + '<span class="nm">'+esc(f.name)+'</span>'
+      + '<span class="k" style="white-space:nowrap">'+f.size+' B · '+esc(f.mtime)+'</span></div>';
+  }).join('') || '<div class="empty">'+t('proj.empty')+'</div>';
+}
+function openFile(rel){
+  api('/api/projects/file?path='+encodeURIComponent(rel)).then(function(r){
+    var body = '<div class="dh"><div class="r1"><span class="pill">'+esc(rel.split('/')[0])+'</span>'
+      + '<span class="code">'+r.size+' B</span></div><h2>'+esc(rel.split('/').slice(1).join('/'))+'</h2></div>'
+      + '<div class="rule"></div><div class="body md">'+md(r.text)+'</div>'
+      + '<div class="df"><button class="btn pri" onclick="closeModal()">'+t('btn.close')+'</button></div>';
+    modal(body);
+  }).catch(function(e){ toast(t('msg.readFail')+e.message); });
+}
+
+/* ============ 渲染：事件流 ============ */
+/* 事件类型的中文/英文显示名 —— 键就是事件 kind 本身，所以新增 kind 只要补字典 */
+function kindName(k){ return t('kind.' + k, null, k); }
+function renderEvents(){
+  var evs = S.events||[];
+  var unread = evs.filter(function(e){return !e.ack_at;}).length;
+  $('ev-sum').textContent = t('ev.sum', {n: evs.length, u: unread});
+  $('ev-list').innerHTML = evs.length ? evs.slice().reverse().map(function(e){
+    return '<div class="row" data-ev="'+e.id+'">'
+      + '<span class="unread'+(e.ack_at?' no':'')+'"></span>'
+      + '<div class="grow"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+      + '<span class="pill '+((e.kind==='mention'||e.kind==='decide')?'k-高':'')+'">'+esc(kindName(e.kind))+'</span>'
+      + '<span class="code">'+esc(e.code||'—')+'</span>'
+      + '<span class="k">'+esc(e.actor||'system')+' · '+esc(e.ts)+'</span></div>'
+      + '<div style="margin-top:6px;font-size:12.5px;line-height:1.65">'+esc(e.summary||'')+'</div>'
+      + '</div></div>';
+  }).join('') : '<div class="empty">'+t('ev.none')+'</div>';
+}
+
+/* ============ 渲染：Token ============ */
+/* 🔴 隐私防护（老大 2026-09-20：「token 记得做隐私防护，前端不要明文」）——
+   列表里**永远只有尾号**，明文只走 /api/tokens/{id}/value 单取一次、直接进剪贴板，不进 DOM。 */
+function maskTok(t){
+  var tail = t.tail || '';
+  var dots = '';
+  for(var i=0;i<20;i++) dots += '•';
+  return 'ms_' + dots + tail;
+}
+function renderTokens(){
+  var ts = S.tokens||[];
+  $('tk-sum').textContent = t('tk.sum', {n: ts.length, ok: ts.filter(function(t){return !t.revoked;}).length});
+  $('tk-list').innerHTML = ts.length ? ts.map(function(tk){
+    return '<div class="tk'+(tk.revoked?' dead':'')+'">'
+      + '<div class="th"><span class="nm">'+esc(tk.name)+'</span>'
+      + '<span class="pill k-'+(!tk.revoked?'进行中':'')+'">'+(tk.revoked?t('tk.revoked'):t('tk.active'))+'</span></div>'
+      + '<div class="k">'+t('tk.role')+' '+esc(tk.role)+' · '+t('tk.tail')+' '+esc(tk.tail)+'</div>'
+      + '<div class="val" id="tkv-'+tk.id+'">'+esc(maskTok(tk))+'</div>'
+      + '<div class="ha">'
+      + '<button class="btn sm" data-tk="copy" data-id="'+tk.id+'">'+t('tk.copy')+'</button>'
+      + '<button class="btn sm" data-tk="verify" data-id="'+tk.id+'">'+t('tk.verify')+'</button>'
+      + '<button class="btn sm" data-tk="rotate" data-id="'+tk.id+'">'+t('tk.rotate')+'</button>'
+      + '<button class="btn sm gh" data-tk="revoke" data-id="'+tk.id+'" '+(tk.revoked?'disabled':'')+'>'+t('tk.revoke')+'</button>'
+      + '</div>'
+      + '<div class="st"><span id="tks-'+tk.id+'"></span><span>'+t('tk.created', {ts: esc(tk.created_at||'—')})+'</span>'
+      + '<span>'+t('tk.lastUsed', {ts: esc(tk.last_used_at||t('tk.never'))})+'</span></div>'
+      + '</div>';
+  }).join('') : '<div class="empty">'+t('tk.none')+'</div>';
+}
+function copyText(t){
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(t);
+  }
+  return new Promise(function(res, rej){            /* http + IP 下 clipboard 不可用，走兜底 */
+    var ta = document.createElement('textarea');
+    ta.value = t; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); res(); }catch(e){ rej(e); }
+    document.body.removeChild(ta);
+  });
+}
+/* 「复制」= 后台单取一次明文 → 直接进剪贴板 → **值不进 DOM** */
+function copyTok(tk, btn){
+  if(btn) btn.disabled = true;
+  api('/api/tokens/'+tk.id+'/value?why='+encodeURIComponent('网页「复制」')).then(function(r){
+    return copyText(r.token);
+  }).then(function(){
+    toast(t('tk.copied', {name: tk.name}));
+  }).catch(function(e){
+    toast(t('tk.valueFail')+e.message);
+  }).then(function(){ if(btn) btn.disabled = false; });
+}
+/* 「验证」= 后端内部验（走同一条鉴权路径），**全程不需要明文** */
+function verifyTokById(tk, el, btn){
+  if(btn) btn.disabled = true;
+  api('/api/tokens/'+tk.id+'/verify').then(function(r){
+    if(el) el.innerHTML = r.verify ? '<span class="ok">'+t('tk.verifyOk')+'</span>'
+                                   : '<span class="bad">'+t('tk.verifyBad')+esc(r.why||'')+'</span>';
+    toast(r.verify ? t('tk.okShort') : t('tk.badShort'));
+  }).catch(function(e){
+    if(el) el.innerHTML = '<span class="bad">'+t('tk.verifyBadP')+esc(e.message)+'</span>';
+  }).then(function(){ if(btn) btn.disabled = false; });
+}
+function openTkAdd(){
+  var body = '<div class="dh"><div class="r1"><span class="pill">'+t('tkadd.title')+'</span></div><h2>'+t('tkadd.sub')+'</h2></div>'
+    + '<div class="rule"></div><div class="fm">'
+    + '<div class="field"><label>'+t('tkadd.nameLabel')+'</label><input id="tk-n" placeholder="'+t('tkadd.namePh')+'"></div>'
+    + '<div class="field"><label>'+t('tkadd.roleLabel')+'</label><select id="tk-r">'
+      + '<option value="agent">'+t('tkadd.roleAgent')+'</option>'
+      + '<option value="readonly">'+t('tkadd.roleReadonly')+'</option>'
+      + '<option value="admin">'+t('tkadd.roleAdmin')+'</option>'
+      + '</select></div>'
+    + '<div class="err" id="tk-e"></div></div>'
+    + '<div class="df"><button class="btn gh" id="tk-x">'+t('btn.cancel')+'</button><button class="btn pri" id="tk-go">'+t('tkadd.go')+'</button></div>';
+  modal(body, true);
+  $('tk-n').focus();
+  $('tk-x').onclick = closeModal;
+  $('tk-go').onclick = function(){
+    var n = $('tk-n').value.trim();
+    if(!n){ $('tk-e').textContent = t('tkadd.nameRequired'); return; }
+    api('/api/tokens',{method:'POST',body:{name:n,role:$('tk-r').value}})
+      .then(function(r){
+        closeModal();
+        return copyText(r.token).then(function(){
+          toast(t('tkadd.madeCopy'));
+        }).catch(function(){
+          toast(t('tkadd.madeNoCopy'));
+        });
+      })
+      .then(function(){ loadTokens(); })
+      .catch(function(e){ $('tk-e').textContent=e.message; });
+  };
+}
+
+/* 改登录账号 / 密码（老大：「支持我自定义密码，不然我记不住初始密码」） */
+function openChpw(){
+  var body = '<div class="dh"><div class="r1"><span class="pill">'+t('cp.title')+'</span></div>'
+    + '<h2>'+t('cp.sub')+'</h2></div><div class="rule"></div><div class="fm">'
+    + '<div class="field"><label>'+t('cp.oldLabel')+'</label>'
+    + '<input id="cp-old" type="password" autocomplete="current-password"></div>'
+    + '<div class="f2">'
+    + '<div class="field"><label>'+t('cp.userLabel')+'</label><input id="cp-u" placeholder="'+t('cp.userPh', {u: (S.who && S.who.who) || 'admin'})+'"></div>'
+    + '<div class="field"><label>'+t('cp.passLabel')+'</label><input id="cp-p" type="password" autocomplete="new-password"></div>'
+    + '</div>'
+    + '<div class="sub" style="margin-top:18px;font-size:11px;color:var(--ink-3);line-height:1.95">'
+    + t('cp.forgot').replace('.env', '<span class="mono">.env</span>') + '</div>'
+    + '<div class="err" id="cp-e"></div></div>'
+    + '<div class="df"><button class="btn gh" id="cp-x">'+t('btn.cancel')+'</button>'
+    + '<button class="btn pri" id="cp-go">'+t('cp.go')+'</button></div>';
+  modal(body, true);
+  $('cp-old').focus();
+  $('cp-x').onclick = closeModal;
+  $('cp-go').onclick = function(){
+    var o = $('cp-old').value, u = $('cp-u').value.trim(), p = $('cp-p').value;
+    if(!o){ $('cp-e').textContent = t('cp.needOld'); return; }
+    if(!p && !u){ $('cp-e').textContent = t('cp.needOne'); return; }
+    $('cp-go').disabled = true;
+    api('/api/password', {method:'POST', body:{old:o, user:u, pass:p}})
+      .then(function(r){
+        closeModal();
+        toast(t('cp.done') + (r.changed.length ? r.changed.join(' + ') : t('cp.noChange')));
+      })
+      .catch(function(e){ $('cp-e').textContent = e.message; $('cp-go').disabled = false; });
+  };
+}
+
+/* ============ 渲染：唤醒（以 token 为主 + hook 为辅） ============ */
+/* 「怎么接」不在页面上写了（老大 2026-09-20 让删）—— 接入指南只活在 `ms_guide.py`：
+   出口是 MCP 工具 `ms_guide` 与 REST `GET /api/guide`。**页面只放数据与控件。** */
+function agoStr(s){
+  if(!s) return t('wk.never');
+  var tt = new Date(String(s).replace(' ','T')).getTime();
+  if(!tt) return esc(s);
+  var d = Math.floor((Date.now()-tt)/1000);
+  if(d < 60) return t('ago.now');
+  if(d < 3600) return t('ago.min', {n: Math.floor(d/60)});
+  if(d < 86400) return t('ago.hour', {n: Math.floor(d/3600)});
+  return t('ago.day', {n: Math.floor(d/86400)});
+}
+function renderWake(){
+  var ts = (S.tokens||[]).filter(function(t){ return !t.revoked; });
+  var as = S.agents||[];
+  var lastId = S.lastEventId || 0;
+  var live = 0;
+
+  $('wk-list').innerHTML = ts.length ? ts.map(function(tk){
+    var idle = 999999;
+    if(tk.last_pull_at){ var tms = new Date(String(tk.last_pull_at).replace(' ','T')).getTime(); idle = tms ? (Date.now()-tms)/1000 : 999999; }
+    var on = idle < 180;
+    if(on) live++;
+    var behind = Math.max(0, lastId - (tk.last_event_id||0));
+    var stTxt = !tk.last_pull_at ? t('wk.neverPulled') : (on ? t('wk.online') : t('wk.offline'));
+    var stCls = !tk.last_pull_at ? '' : (on ? 'k-进行中' : 'k-已否决');
+    return '<div class="row">'
+      + '<span class="unread'+(on?'':' no')+'"></span>'
+      + '<div class="grow">'
+      + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+      + '<span style="font-size:13.5px">'+esc(tk.name)+'</span>'
+      + '<span class="pill k-'+esc(tk.role)+'">'+esc(tk.role)+'</span>'
+      + '<span class="pill '+stCls+'">'+stTxt+'</span>'
+      + '</div>'
+      + '<div class="k" style="margin-top:8px">'
+      + t('tk.tail')+' '+esc(tk.tail)
+      + ' · '+t('wk.lastPull')+(tk.last_pull_at ? '<b>'+agoStr(tk.last_pull_at)+'</b>（'+esc(tk.last_pull_at)+'）' : '<span style="color:var(--danger)">'+t('wk.never')+'</span>')
+      + ' · '+t('wk.cursor')+'<b>#'+(tk.last_event_id||0)+'</b>'+t('wk.latest')+lastId
+      + (behind ? ' · <span style="color:var(--accent)">'+t('wk.behind', {n: behind})+'</span>' : ' · <span class="ok">'+t('wk.caughtUp')+'</span>')
+      + '</div></div></div>';
+  }).join('') : '<div class="empty">'+t('wk.none')+'</div>';
+
+  $('ag-list').innerHTML = as.length ? as.map(function(a){
+    var st = a.last_status || '';
+    var cls = st.indexOf('ok')===0 ? 'ok' : (st ? 'bad' : '');
+    return '<div class="row">'
+      + '<div class="grow">'
+      + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+      + '<span class="pill k-'+((a.enabled)?'进行中':'')+'">'+(a.enabled?t('wk.enabled'):t('wk.disabled'))+'</span>'
+      + '<span style="font-size:13.5px">'+esc(a.name)+'</span>'
+      + (a.note?'<span class="k">'+esc(a.note)+'</span>':'')
+      + '</div>'
+      + '<div class="mono" style="margin-top:7px;color:var(--ink-2)">'+esc(a.hook_url||t('wk.noHook'))+'</div>'
+      + '<div class="k" style="margin-top:7px">'+t('wk.lastPush')+esc(a.last_call_at||t('wk.never'))
+      + (st? t('wk.result')+'<span class="'+cls+'">'+esc(st)+'</span>':'')
+      + (a.last_error?' · <span class="bad">'+esc(String(a.last_error).slice(0,90))+'</span>':'')
+      + '</div></div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">'
+      + '<button class="btn sm" data-ag="ping" data-id="'+a.id+'">'+t('wk.ping')+'</button>'
+      + '<button class="btn sm" data-ag="toggle" data-id="'+a.id+'">'+(a.enabled?t('wk.disable'):t('wk.enable'))+'</button>'
+      + '<button class="btn sm gh" data-ag="del" data-id="'+a.id+'">'+t('wk.del')+'</button>'
+      + '</div></div>';
+  }).join('') : '<div class="empty">'+t('wk.noAgents')+'</div>';
+}
+function loadWake(){
+  return Promise.all([
+    api('/api/tokens').then(function(r){ S.tokens = r.tokens||[]; }),
+    api('/api/agents').then(function(r){ S.agents = r.agents||[]; }),
+    api('/api/events?limit=1').then(function(r){ S.lastEventId = r.last_id||0; })
+  ]).then(function(){ renderWake(); });
+}
+var loadAgents = loadWake;
+
+function openAgAdd(){
+  var body = '<div class="dh"><div class="r1"><span class="pill">'+t('agadd.title')+'</span></div>'
+    + '<h2>'+t('agadd.sub')+'</h2></div><div class="rule"></div><div class="fm">'
+    + '<div class="field"><label>'+t('agadd.nameLabel')+'</label><input id="ag-n" placeholder="'+t('agadd.namePh')+'"></div>'
+    + '<div class="field"><label>'+t('agadd.hookLabel')+'</label><input id="ag-u" placeholder="http://192.168.1.10:9010/wake"></div>'
+    + '<div class="field"><label>'+t('agadd.tokenLabel')+'</label><input id="ag-t" placeholder="'+t('agadd.tokenPh')+'"></div>'
+    + '<div class="field"><label>'+t('agadd.noteLabel')+'</label><input id="ag-m" placeholder="'+t('agadd.notePh')+'"></div>'
+    + '<div class="sub" style="margin-top:16px;font-size:11px;color:var(--ink-3);line-height:1.95">'
+    + t('agadd.payload')+'<span class="mono">{event, code, title, opinion, status, project, level, actor, ts, dashboard, howto}</span></div>'
+    + '<div class="err" id="ag-e"></div></div>'
+    + '<div class="df"><button class="btn gh" id="ag-x">'+t('btn.cancel')+'</button><button class="btn pri" id="ag-go">'+t('btn.create')+'</button></div>';
+  modal(body, true);
+  $('ag-n').focus();
+  $('ag-x').onclick = closeModal;
+  $('ag-go').onclick = function(){
+    var n = $('ag-n').value.trim();
+    if(!n){ $('ag-e').textContent = t('agadd.nameRequired'); return; }
+    api('/api/agents',{method:'POST',body:{name:n,hook_url:$('ag-u').value.trim(),
+      token:$('ag-t').value.trim(),note:$('ag-m').value.trim()}})
+      .then(function(){ closeModal(); loadAgents(); toast(t('agadd.done')); })
+      .catch(function(e){ $('ag-e').textContent=e.message; });
+  };
+}
+
+/* ============ 数据加载 ============ */
+function reloadAll(){ return Promise.all([loadItems(), loadEvents(), loadStats()]); }
+function loadItems(){
+  return api('/api/items').then(function(r){ S.items = r.items||[]; renderBoard(); });
+}
+function loadStats(){
+  return api('/api/stats').then(function(r){
+    S.stats = r;
+    if(r.build && r.build !== BUILD_ID){
+      $('build').innerHTML = '<span class="bad">'+t('msg.newVersion')+'</span>';
+    } else {
+      $('build').textContent = 'build ' + BUILD_ID;
+    }
+    renderStats();
+  });
+}
+function loadEvents(){
+  return api('/api/events?limit=300').then(function(r){ S.events = r.events||[]; if(S.tab==='events') renderEvents(); });
+}
+function loadProjects(){
+  return api('/api/projects').then(function(r){
+    S.projects = r.projects||[]; S.projRoot = r.root; S.projTotal = r.total; renderProjects();
+  });
+}
+function loadTokens(){
+  return api('/api/tokens').then(function(r){ S.tokens = r.tokens||[]; renderTokens(); });
+}
+
+/* ============ 实时 ============ */
+function setLive(on, txt){
+  $('live').className = 'dot ' + (on?'live':'dead');
+  $('live-txt').textContent = txt;
+}
+function connectSSE(){
+  if(S.sse) try{S.sse.close();}catch(e){}
+  var url = API_BASE + '/api/stream' + (tok() ? ('?token='+encodeURIComponent(tok())) : '');
+  var es = new EventSource(url, {withCredentials:true});
+  S.sse = es;
+  es.addEventListener('hello', function(){ setLive(true, t('live.on')); });
+  es.addEventListener('changed', function(ev){
+    var d = {};
+    try{ d = JSON.parse(ev.data); }catch(e){}
+    if(d.summary) toast(t('live.changed')+d.summary.slice(0,42));
+    reloadAll();
+  });
+  es.addEventListener('ping', function(){ setLive(true, t('live.on')); });
+  es.onerror = function(){
+    setLive(false, t('live.down'));
+    try{es.close();}catch(e){}
+    S.sse = null;
+    clearInterval(S.timer);
+    S.timer = setInterval(function(){ reloadAll(); }, 30000);
+    setTimeout(connectSSE, 8000);
+  };
+}
+
+/* ============ 事件绑定 ============ */
+document.addEventListener('click', function(ev){
+  var el0 = ev.target;
+  var tab = el0.closest ? el0.closest('.tab') : null;
+  if(tab){ switchTab(tab.dataset.tab); return; }
+  var card = el0.closest ? el0.closest('[data-detail]') : null;
+  if(card){ openDetail(card.dataset.rid); return; }
+  var act = el0.closest ? el0.closest('[data-act]') : null;
+  if(act){
+    var c = act.dataset.code;
+    if(act.dataset.act==='mention') openAction(c,'mention');
+    else if(act.dataset.act==='decide') openAction(c,'decide');
+    else if(act.dataset.act==='close') openClose(c);
+    else if(act.dataset.act==='edit') openEdit(c);
+    return;
+  }
+  var pi = el0.closest ? el0.closest('[data-proj]') : null;
+  if(pi){ S.projSel = pi.dataset.proj; renderProjects(); return; }
+  var mo = el0.closest ? el0.closest('[data-more]') : null;
+  if(mo){ setShowClosed(true); return; }
+  var fi = el0.closest ? el0.closest('[data-file]') : null;
+  if(fi){ openFile(fi.dataset.file); return; }
+  var tb = el0.closest ? el0.closest('[data-tk]') : null;
+  if(tb){
+    var id = +tb.dataset.id;
+    var row = (S.tokens||[]).filter(function(x){return x.id===id;})[0];
+    if(!row) return;
+    if(tb.dataset.tk==='copy'){
+      copyTok(row, tb);
+    } else if(tb.dataset.tk==='verify'){
+      verifyTokById(row, $('tks-'+id), tb);
+    } else if(tb.dataset.tk==='rotate'){
+      if(!window.confirm(t('tk.rotateAsk'))) return;
+      api('/api/tokens/'+id+'/rotate',{method:'POST',body:{}}).then(function(r){
+        var tail = r.token.slice(-6);
+        return copyText(r.token).then(function(){
+          toast(t('tk.rotated', {tail: tail}));
+        }).catch(function(){
+          toast(t('tk.rotatedNoCopy', {tail: tail}));
+        });
+      }).then(function(){ loadTokens(); })
+        .catch(function(e){ toast(t('msg.failed')+e.message); });
+    } else if(tb.dataset.tk==='revoke'){
+      if(!window.confirm(t('tk.revokeAsk'))) return;
+      api('/api/tokens/'+id+'/revoke',{method:'POST',body:{}}).then(function(){
+        loadTokens(); toast(t('tk.revokedMsg'));
+      }).catch(function(e){ toast(t('msg.failed')+e.message); });
+    }
+    return;
+  }
+  var ag = el0.closest ? el0.closest('[data-ag]') : null;
+  if(ag){
+    var aid = +ag.dataset.id, aact = ag.dataset.ag;
+    var arow = (S.agents||[]).filter(function(x){return x.id===aid;})[0];
+    if(!arow) return;
+    if(aact==='ping'){
+      ag.disabled = true;
+      api('/api/agents/'+aid+'/ping',{method:'POST',body:{}}).then(function(r){
+        loadAgents();
+        toast(r.ok ? (t('wk.pingOk')+r.status) : (t('wk.pingBad')+(r.status||'')+' '+String(r.error||'').slice(0,60)));
+      }).catch(function(e){ toast(t('msg.failed')+e.message); });
+    } else if(aact==='toggle'){
+      api('/api/agents/'+aid,{method:'POST',body:{enabled: !arow.enabled}})
+        .then(function(){ loadAgents(); toast(arow.enabled?t('wk.disabledMsg'):t('wk.enabledMsg')); })
+        .catch(function(e){ toast(t('msg.failed')+e.message); });
+    } else if(aact==='del'){
+      if(!window.confirm(t('wk.delAsk'))) return;
+      api('/api/agents/'+aid+'/del',{method:'POST',body:{}})
+        .then(function(){ loadAgents(); toast(t('msg.deleted')); })
+        .catch(function(e){ toast(t('msg.failed')+e.message); });
+    }
+    return;
+  }
+});
+
+function switchTab(name){
+  S.tab = name;
+  document.querySelectorAll('.tab').forEach(function(b){ b.classList.toggle('on', b.dataset.tab===name); });
+  ['board','projects','events','tokens','agents','settings'].forEach(function(k){
+    $('v-'+k).classList.toggle('hide', k!==name);
+  });
+  if(name==='projects') loadProjects();
+  if(name==='events'){ loadEvents().then(renderEvents); }
+  if(name==='tokens') loadTokens();
+  if(name==='agents') loadAgents();
+  if(name==='settings'){ renderSettings(); if(!SET) loadSettings(); }
+  var gear = $('set-btn');
+  if(gear) gear.classList.toggle('on', name === 'settings');
+}
+
+/* 「显示已闭环」开关 —— 三栏统一默认隐藏，这一个钮管全部 */
+function setShowClosed(v){
+  S.showClosed = !!v;
+  var b = $('toggle-closed');
+  if(b){
+    b.textContent = S.showClosed ? t('board.hideClosed') : t('board.showClosed');
+    b.classList.toggle('pri', S.showClosed);
+  }
+  renderCols();
+}
+
+$('q').addEventListener('input', function(){ S.q = this.value.trim(); renderCols(); });
+$('toggle-closed').addEventListener('click', function(){ setShowClosed(!S.showClosed); });
+$('reload').addEventListener('click', function(){ reloadAll().then(function(){ toast(t('msg.refreshed')); }); });
+$('add').addEventListener('click', openAdd);
+$('proj-reload').addEventListener('click', function(){ loadProjects().then(function(){ toast(t('msg.rescanned')); }); });
+$('ev-ack').addEventListener('click', function(){
+  api('/api/events/ack',{method:'POST',body:{up_to:0}}).then(function(r){
+    loadEvents().then(renderEvents); loadStats(); toast(t('msg.acked', {n: r.acked}));
+  });
+});
+$('tk-verify').addEventListener('click', function(){
+  api('/api/tokens/verify').then(function(r){
+    toast(t('msg.verify', {ok: r.passed, bad: r.failed}));
+    return loadTokens();
+  }).catch(function(e){ toast(t('msg.failed')+e.message); });
+});
+$('tk-add').addEventListener('click', openTkAdd);
+$('ag-add').addEventListener('click', openAgAdd);
+$('chpw').addEventListener('click', openChpw);
+$('set-btn').addEventListener('click', function(){ switchTab('settings'); });
+$('ag-refresh').addEventListener('click', function(){ loadWake().then(function(){ toast(t('msg.refreshed')); }); });
+
+/* ============ 启动 ============ */
+function boot(){
+  $('build').textContent = 'build ' + BUILD_ID;
+  /* 首屏先用本机缓存的语言/主题上色（避免刷一下白闪），服务端设置拿到后再校准 */
+  try{
+    var c = localStorage.getItem(LS_LANG);  if(c) LANG = (c === 'en' ? 'en' : 'zh');
+    var th = localStorage.getItem(LS_THEME);
+    applyTheme(th || 'auto');
+    applyLang(WANT_LANG || LANG, false);
+  }catch(e){}
+  api('/api/whoami').then(function(w){
+    S.who = w;
+    hideLogin();
+    return loadSettings().catch(function(){ /* 设置读不到不挡使用 */ });
+  }).then(function(){
+    if(WANT_LANG) applyLang(WANT_LANG, false);
+    reloadAll().then(function(){
+      var tab = WANT_TAB || (S.settings && S.settings.default_tab) || 'board';
+      if(tab && tab !== 'board') switchTab(tab);
+      if(WANT_OPEN) openDetail(decodeURIComponent(WANT_OPEN));
+      if(NO_SSE){
+        setLive(true, t('live.poll'));
+        S.timer = setInterval(reloadAll, 15000);
+      } else {
+        setLive(true, t('live.connecting'));
+        connectSSE();
+      }
+    });
+  }).catch(function(e){
+    if(e.code===401) showLogin();
+    else setLive(false, t('live.off'));
+  });
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+# ---- 数据与运行时（绝不进仓库）----
+*.sqlite3
+*.sqlite3-*
+wb.json
+wb.json.bak*
+projects/
+backups/
+bak-v1-*/
+*.log
+*.log.*
+# ↑ 轮转产物（http.log.1 / backup.log.2.gz）—— 只写 *.log 挡不住它们
+
+# ---- 凭据 ----
+.env
+.env.*
+
+# ---- 手工历史快照（git 管版本，不需要它们）----
+*.bak
+*.bak-*
+*.bak.*
+*.pre-*
+
+# ---- Python ----
+venv/
+__pycache__/
+*.pyc
+
+# ---- 编辑器 / 系统 ----
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# 测试的运行留档（跑完自动写，别提交）
+_ms_v2_agent_out.txt
+_test_db_out.txt
+
+# 环境变量样例要进仓库（真 .env 仍然被挡）
+!.env.example

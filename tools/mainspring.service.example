@@ -1,0 +1,35 @@
+# Mainspring 机枢 · systemd 单元样例
+#
+# 装法（把 <USER> / <ROOT> 换成实际值，下面两行 sed 直接可用）：
+#   sudo cp tools/mainspring.service.example /etc/systemd/system/mainspring.service
+#   sudo sed -i 's#<USER>#ubuntu#g; s#<ROOT>#/opt/mainspring#g' /etc/systemd/system/mainspring.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now mainspring
+#   systemctl status mainspring
+#
+# 改完代码重启：sudo systemctl restart mainspring
+# 自检服务本身：cd <ROOT> && venv/bin/python tools/probe.py
+
+[Unit]
+Description=Mainspring — task board + event stream for humans and agents
+Documentation=file://<ROOT>/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=<USER>
+WorkingDirectory=<ROOT>
+EnvironmentFile=<ROOT>/.env
+ExecStart=<ROOT>/venv/bin/python <ROOT>/ms_server.py
+# 日志落到仓库根的 http.log；**轮转样例见 tools/logrotate.example**
+# （systemd 不轮转文件，不管它就会一直涨：本项目实例 13 天 1.5MB ⇒ 一年 100MB+）
+StandardOutput=append:<ROOT>/http.log
+StandardError=append:<ROOT>/http.log
+Restart=always
+RestartSec=3
+# 内存上限按实际规模调（本机 2 核 1.9G 的实例实测常驻 80M 上下）
+# MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,30 @@
+# Mainspring 机枢 · 日志轮转样例（logrotate）
+#
+# 服务的 stdout/stderr 由 systemd 追加到 <ROOT>/http.log（见 tools/mainspring.service.example），
+# 每日备份脚本又把过程输出追加到 <ROOT>/backup.log。
+# 这两个文件**没有任何机制让它变小** —— 不轮转的话，100MB+/年就是必然的。
+#
+# 装法（把 <USER> / <ROOT> 换成实际值，下面两行直接可用）：
+#   sudo cp tools/logrotate.example /etc/logrotate.d/mainspring
+#   sudo sed -i 's#<USER>#ubuntu#g; s#<ROOT>#/opt/mainspring#g' /etc/logrotate.d/mainspring
+#
+# 验证：
+#   sudo logrotate -d /etc/logrotate.d/mainspring     # 干跑，只看它打算做什么
+#   sudo logrotate -f /etc/logrotate.d/mainspring     # 强制转一次，检查产物
+#   ls -l <ROOT>/http.log*                            # 应看到 http.log 被截断 + http.log.1(.gz)
+#
+# ⚠️ 必须 copytruncate：systemd 一直握着 http.log 的 fd，
+#    直接 rename 的话进程会继续往**已被改名**的文件写，新文件永远是空的。
+#    copytruncate 先复制再原地清空，代价是轮转瞬间可能丢几行（可接受）。
+
+<ROOT>/http.log <ROOT>/backup.log {
+    daily
+    rotate 14
+    maxsize 10M
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+    su <USER> <USER>
+}

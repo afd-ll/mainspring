@@ -1,0 +1,7 @@
+# 统一行尾：仓库内一律 LF（贡献者可能来自 Windows）
+* text=auto eol=lf
+
+# 二进制/生成物，不做行尾转换
+*.sqlite3 binary
+*.png binary
+*.jpg binary
